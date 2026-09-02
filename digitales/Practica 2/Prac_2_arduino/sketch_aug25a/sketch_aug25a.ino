@@ -1,762 +1,828 @@
+/*
+  =================================================
+  JUEGO ESTILO "SIMON" - Raspberry Pi Pico
+  Puerto a Arduino IDE (arduino-pico core)
+  =================================================
+
+  Núcleo 0 (setup / loop):
+      - Toda la lógica del juego (LEDs de patrón,
+        botones, vidas, niveles, animaciones,
+        botón de reinicio).
+
+  Núcleo 1 (setup1 / loop1):
+      - SOLO se encarga de multiplexar el display
+        de 7 segmentos (4 dígitos), de forma
+        continua e independiente.
+      - Así el display NUNCA parpadea ni se
+        congela, sin necesidad de llamar a
+        multiplexar() manualmente desde el resto
+        del código (como se hacía en la versión
+        MicroPython).
+
+  Comunicación entre núcleos:
+      - El arreglo "numero[4]" (nivel, vidas,
+        unidades de tiempo, décimas de tiempo)
+        se declara "volatile" porque el núcleo 0
+        lo escribe y el núcleo 1 lo lee
+        constantemente. En el RP2040 la escritura
+        de una palabra de 32 bits (un int) es
+        atómica, así que no hace falta un mutex
+        para este caso de uso.
+
+  Requiere el core "Raspberry Pi Pico/RP2040" de
+  Earle Philhower (arduino-pico) instalado en el
+  Arduino IDE, que es el que provee setup1()/loop1().
+*/
 
 // =================================================
-// JUEGO DE MEMORIA - RASPBERRY PI PICO
-// Arduino IDE
+// CONFIGURACIÓN DE PINES
 // =================================================
 
-// =================================================
-// CONFIGURACIÓN
-// =================================================
-
-// LEDs
-const int leds[5] = {
-  16,   // LED 0
-  17,   // LED 1
-  18,   // LED 2
-  19,   // LED 3
-  20    // LED 4 - parpadeo
-};
+// LEDs (patrón + LED de respuesta)
+// leds[0..3] -> botones 0..3 -> números 0..3
+// leds[4]    -> LED de "respuesta" (pin 20)
+const uint8_t PIN_LEDS[5] = {20, 19, 18, 17, 16};
 
 // Botones
-// Botón 11 -> LED 16 -> número 0
-// Botón 12 -> LED 17 -> número 1
-// Botón 13 -> LED 18 -> número 2
-// Botón 14 -> LED 19 -> número 3
-// Botón 15 -> INICIO / REINICIO
+// Botón 0 -> LED 17 -> número 0   (leds[1])
+// Botón 1 -> LED 18 -> número 1   (leds[2])
+// Botón 2 -> LED 19 -> número 2   (leds[3])
+// Botón 3 -> LED 20 -> número 3   (leds[0])  (ver nota abajo)
+// Botón 4 -> INICIO / REINICIO
+//
+// NOTA: se conserva exactamente la misma
+// correspondencia índice-a-índice que en el
+// original MicroPython: botones[i] <-> leds[i],
+// y es leds[lista[i]] el que se enciende al
+// mostrar la secuencia, igual que antes.
+const uint8_t PIN_BOTONES[5] = {0, 1, 2, 3, 4};
 
-const int botones[5] = {
-  11,
-  12,
-  13,
-  14,
-  15
+// Display de 7 segmentos: segmentos (a,b,c,d,e,f,g)
+const uint8_t PIN_SEG[7] = {6, 7, 8, 9, 10, 11, 12};
+
+// Display de 7 segmentos: dígitos (común de cada display)
+const uint8_t PIN_DIG[4] = {13, 14, 15, 21};
+
+// Tabla de patrones para cada número 0-9
+// (10 = dígito en blanco, todos los segmentos apagados)
+const uint8_t TABLA_7SEG[11][7] = {
+    {1,1,1,1,1,1,0}, // 0
+    {0,1,1,0,0,0,0}, // 1
+    {1,1,0,1,1,0,1}, // 2
+    {1,1,1,1,0,0,1}, // 3
+    {0,1,1,0,0,1,1}, // 4
+    {1,0,1,1,0,1,1}, // 5
+    {1,0,1,1,1,1,1}, // 6
+    {1,1,1,0,0,0,0}, // 7
+    {1,1,1,1,1,1,1}, // 8
+    {1,1,1,1,0,1,1}, // 9
+    {0,0,0,0,0,0,0}  // 10 = blanco
 };
 
-// Tiempo necesario para reiniciar
-const unsigned long TIEMPO_REINICIO = 2000; // 2 segundos
+// -------------------------------------------------
+// numero[0] -> Nivel actual
+// numero[1] -> Vidas restantes
+// numero[2] -> Unidades del tiempo transcurrido
+// numero[3] -> Décimas del tiempo transcurrido
+//
+// Compartido entre núcleos: lo escribe el núcleo 0,
+// lo lee continuamente el núcleo 1.
+// -------------------------------------------------
+volatile int numero[4] = {0, 0, 0, 0};
 
+// Tiempo que permanece encendido cada dígito (ms)
+const unsigned long INTERVALO_DISPLAY_MS = 2;
+
+// Tiempo necesario para reiniciar (pulsación larga)
+const unsigned long TIEMPO_REINICIO_MS = 2000;
+
+// Límite máximo del tiempo acumulado de respuesta
+const float TIEMPO_ACUMULADO_MAX = 9.9f;
 
 // =================================================
-// VARIABLES
+// VARIABLES DEL JUEGO (usadas SOLO en el núcleo 0)
 // =================================================
 
 float tiempo = 0;
 float time_resp = 0;
-
 int vidas = 3;
-float tiempo_trans = 0;
 
-// Secuencia aleatoria
 int lista[10] = {0};
 
-// Guarda desde cuándo se está presionando
-// el botón 15
-unsigned long boton15_desde = 0;
+// Tiempo acumulado que el jugador tarda en
+// completar correctamente cada nivel. Se reinicia
+// en cada partida nueva.
+float tiempo_acumulado = 0;
 
-// Indica si el botón 15 está siendo medido
-bool boton15_midiendo = false;
+// Guarda desde cuándo se está presionando el botón
+// de inicio/reinicio (botón 4). -1 = no presionado.
+long boton4_desde = -1;
 
-
-// =================================================
-// SETUP
-// =================================================
-
-void setup() {
-
-  Serial.begin(115200);
-
-  // Configurar LEDs como salida
-  for (int i = 0; i < 5; i++) {
-    pinMode(leds[i], OUTPUT);
-    digitalWrite(leds[i], LOW);
-  }
-
-  // Configurar botones como entrada con resistencia
-  // interna PULL-DOWN
-  for (int i = 0; i < 5; i++) {
-    pinMode(botones[i], INPUT_PULLDOWN);
-  }
-
-  randomSeed(micros());
-
-  Serial.println("======================");
-  Serial.println("JUEGO DE MEMORIA");
-  Serial.println("======================");
-}
-
+// Resultados posibles de esperar_con_parpadeo()
+enum ResultadoNivel { REINICIO_SOLICITADO = -1, NIVEL_ERROR = 0, NIVEL_OK = 1 };
 
 // =================================================
-// APAGAR TODOS LOS LEDS
-// =================================================
-
-void apagar_leds() {
-
-  for (int i = 0; i < 5; i++) {
-    digitalWrite(leds[i], LOW);
-  }
-}
-
-
-// =================================================
-// REVISAR BOTÓN 15
+// UTILIDADES DE TIEMPO (equivalentes a time.ticks_diff)
 //
-// Devuelve:
-// true  -> se solicitó reinicio
-// false -> no se solicitó reinicio
+// La resta de dos unsigned long funciona
+// correctamente incluso si millis() da la vuelta
+// (overflow), por eso no hace falta nada especial.
 // =================================================
 
-bool revisar_boton_reinicio() {
+inline unsigned long diffMs(unsigned long ahora, unsigned long antes) {
+    return ahora - antes;
+}
 
-  unsigned long ahora = millis();
+// =================================================
+// APAGAR TODOS LOS LEDS (núcleo 0)
+// =================================================
 
-  // =============================================
-  // BOTÓN PRESIONADO
-  // =============================================
+void apagarLeds() {
+    for (uint8_t i = 0; i < 5; i++) {
+        digitalWrite(PIN_LEDS[i], LOW);
+    }
+}
 
-  if (digitalRead(botones[4]) == HIGH) {
+// =================================================
+// DISPLAY: APAGAR TODOS LOS DÍGITOS (núcleo 1)
+// =================================================
 
-    // Primera vez que detectamos la pulsación
-    if (!boton15_midiendo) {
+void apagarDigitos() {
+    for (uint8_t i = 0; i < 4; i++) {
+        digitalWrite(PIN_DIG[i], HIGH);
+    }
+}
 
-      boton15_desde = ahora;
-      boton15_midiendo = true;
+// =================================================
+// DISPLAY: ESCRIBIR SEGMENTOS DE UN NÚMERO (0-10)
+// (núcleo 1)
+// =================================================
+
+void escribirSegmentos(int n) {
+    for (uint8_t i = 0; i < 7; i++) {
+        digitalWrite(PIN_SEG[i], TABLA_7SEG[n][i] ? LOW : HIGH);
+    }
+}
+
+// =================================================
+// DISPLAY: MULTIPLEXAR (SOLO se llama desde loop1,
+// núcleo 1). Se ejecuta en bucle continuo, así que
+// no necesita ser invocada manualmente desde el
+// resto del código como en la versión MicroPython.
+// =================================================
+
+void multiplexar() {
+    static uint8_t posicionDisplay = 0;
+    static unsigned long ultimoCambio = 0;
+
+    unsigned long ahora = millis();
+
+    if (diffMs(ahora, ultimoCambio) >= INTERVALO_DISPLAY_MS) {
+        apagarDigitos();
+
+        escribirSegmentos(numero[posicionDisplay]);
+
+        digitalWrite(PIN_DIG[posicionDisplay], LOW);
+
+        posicionDisplay++;
+        if (posicionDisplay >= 4) {
+            posicionDisplay = 0;
+        }
+
+        ultimoCambio = ahora;
+    }
+}
+
+// =================================================
+// DISPLAY: ACTUALIZAR NIVEL / VIDAS / TIEMPO
+// (núcleo 0 -> escribe en "numero", que lee núcleo 1)
+// =================================================
+
+void actualizarNumero(int nNivel, int nVidas, float nTiempo) {
+    if (nTiempo > TIEMPO_ACUMULADO_MAX) nTiempo = TIEMPO_ACUMULADO_MAX;
+    if (nTiempo < 0) nTiempo = 0;
+
+    int entero = (int)nTiempo;
+    int decimal = (int)round((nTiempo - entero) * 10.0f);
+
+    if (decimal >= 10) {
+        decimal = 0;
+        entero += 1;
+    }
+    if (entero > 9) entero = 9;
+
+    numero[0] = (nNivel >= 0 && nNivel <= 9) ? nNivel : 9;
+    numero[1] = (nVidas >= 0 && nVidas <= 9) ? nVidas : 9;
+    numero[2] = entero;
+    numero[3] = decimal;
+}
+
+// =================================================
+// ESPERAR X MILISEGUNDOS
+//
+// En la versión MicroPython esta función también
+// llamaba a multiplexar() para no congelar el
+// display. Aquí el display se refresca solo, en el
+// núcleo 1, así que basta con un delay() normal.
+// =================================================
+
+void esperarMsConDisplay(unsigned long ms) {
+    delay(ms);
+}
+
+// =================================================
+// ANIMACIÓN: SECUENCIA CORRECTA (NIVEL SUPERADO)
+// Barrido rápido, una sola pasada, LED 0 -> LED 3.
+// =================================================
+
+void animacionNivelSuperado() {
+    apagarLeds();
+    for (uint8_t i = 0; i < 4; i++) {
+        digitalWrite(PIN_LEDS[i], HIGH);
+        esperarMsConDisplay(60);
+        digitalWrite(PIN_LEDS[i], LOW);
+    }
+}
+
+// =================================================
+// ANIMACIÓN: ENTRADA INCORRECTA
+// Los 4 LEDs (0-3) encienden juntos y parpadean 2 veces.
+// =================================================
+
+void animacionEntradaIncorrecta() {
+    apagarLeds();
+    for (uint8_t r = 0; r < 2; r++) {
+        for (uint8_t i = 0; i < 4; i++) digitalWrite(PIN_LEDS[i], HIGH);
+        esperarMsConDisplay(150);
+        apagarLeds();
+        esperarMsConDisplay(100);
+    }
+}
+
+// =================================================
+// ANIMACIÓN: SE AGOTÓ EL TIEMPO
+// El LED de respuesta (leds[4]) se queda ENCENDIDO
+// fijo, y son los dígitos de TIEMPO (unidades y
+// décimas) los que parpadean en el 7 segmentos.
+// =================================================
+
+void animacionAgotamientoTiempo() {
+    digitalWrite(PIN_LEDS[4], HIGH);
+
+    int unidadesActual = numero[2];
+    int decimasActual = numero[3];
+
+    for (uint8_t r = 0; r < 4; r++) {
+        numero[2] = 10; // blanco
+        numero[3] = 10; // blanco
+        esperarMsConDisplay(150);
+
+        numero[2] = unidadesActual;
+        numero[3] = decimasActual;
+        esperarMsConDisplay(150);
     }
 
-    // Ya estaba presionado
-    else if (ahora - boton15_desde >= TIEMPO_REINICIO) {
-
-      Serial.println("REINICIO SOLICITADO");
-
-      apagar_leds();
-
-      // Esperar a que el usuario SUELTE
-      // el botón
-      while (digitalRead(botones[4]) == HIGH) {
-        delay(10);
-      }
-
-      boton15_midiendo = false;
-
-      return true;
-    }
-  }
-
-  else {
-
-    // El botón está suelto
-    boton15_midiendo = false;
-  }
-
-  return false;
+    digitalWrite(PIN_LEDS[4], LOW);
 }
 
-
 // =================================================
-// ESPERAR UN TIEMPO
-//
-// Mientras espera, revisa continuamente
-// el botón 15.
-//
-// Devuelve:
-// true  -> se pidió reinicio
-// false -> terminó normalmente
+// ANIMACIÓN: PÉRDIDA DE VIDA
+// Parpadea SOLO el dígito de vidas en el 7 segmentos
+// (con el valor ANTERIOR, antes de bajarlo). Los
+// otros 3 dígitos (nivel y tiempo) siguen
+// mostrándose normalmente porque el núcleo 1 sigue
+// multiplexando todo el rato.
 // =================================================
 
-bool esperar_tiempo(float tiempo_total) {
+void animacionPerdidaVida(uint8_t veces = 3, unsigned long duracionMs = 150) {
+    int valorActual = numero[1];
 
-  unsigned long inicio = millis();
+    for (uint8_t r = 0; r < veces; r++) {
+        numero[1] = 10; // blanco
+        esperarMsConDisplay(duracionMs);
 
-  unsigned long duracion =
-    (unsigned long)(tiempo_total * 1000.0);
-
-  while (millis() - inicio < duracion) {
-
-    // Revisar botón 15
-    if (revisar_boton_reinicio()) {
-      return true;
+        numero[1] = valorActual;
+        esperarMsConDisplay(duracionMs);
     }
-
-    // Pequeña espera
-    delay(5);
-  }
-
-  return false;
 }
 
+// =================================================
+// ANIMACIÓN: FINALIZACIÓN EXITOSA (GANASTE)
+// Barrido ida y vuelta (tipo "KITT") x2, seguido de
+// 3 destellos con los 4 LEDs juntos.
+// =================================================
+
+void animacionVictoria() {
+    apagarLeds();
+
+    for (uint8_t r = 0; r < 2; r++) {
+        for (int i = 0; i < 4; i++) {
+            digitalWrite(PIN_LEDS[i], HIGH);
+            esperarMsConDisplay(50);
+            digitalWrite(PIN_LEDS[i], LOW);
+        }
+        for (int i = 2; i >= 0; i--) {
+            digitalWrite(PIN_LEDS[i], HIGH);
+            esperarMsConDisplay(50);
+            digitalWrite(PIN_LEDS[i], LOW);
+        }
+    }
+
+    for (uint8_t r = 0; r < 3; r++) {
+        for (uint8_t i = 0; i < 4; i++) digitalWrite(PIN_LEDS[i], HIGH);
+        esperarMsConDisplay(120);
+        apagarLeds();
+        esperarMsConDisplay(120);
+    }
+}
+
+// =================================================
+// ACUMULAR TIEMPO DE RESPUESTA
+// Suma "segundos" al acumulador global, sin
+// sobrepasar TIEMPO_ACUMULADO_MAX. Se usa sin
+// importar si el intento fue correcto, incorrecto,
+// o si se agotó el tiempo.
+// =================================================
+
+void acumularTiempo(float segundos) {
+    if (tiempo_acumulado < TIEMPO_ACUMULADO_MAX) {
+        tiempo_acumulado += segundos;
+        if (tiempo_acumulado > TIEMPO_ACUMULADO_MAX) {
+            tiempo_acumulado = TIEMPO_ACUMULADO_MAX;
+        }
+    }
+    Serial.print("Tiempo acumulado: ");
+    Serial.println(tiempo_acumulado);
+}
+
+// =================================================
+// REVISAR BOTÓN DE REINICIO (botón 4)
+// Devuelve true si se solicitó reinicio.
+// Se llama continuamente durante todo el juego.
+// (Ya NO llama a multiplexar(): eso lo hace solo
+// el núcleo 1 en segundo plano.)
+// =================================================
+
+bool revisarBotonReinicio() {
+    unsigned long ahora = millis();
+
+    if (digitalRead(PIN_BOTONES[4]) == HIGH) {
+
+        if (boton4_desde == -1) {
+            boton4_desde = ahora;
+        } else if (diffMs(ahora, (unsigned long)boton4_desde) >= TIEMPO_REINICIO_MS) {
+
+            Serial.println("REINICIO SOLICITADO");
+            apagarLeds();
+
+            // Esperar a que el usuario SUELTE el botón,
+            // para que no vuelva a iniciar solo.
+            while (digitalRead(PIN_BOTONES[4]) == HIGH) {
+                delay(10);
+            }
+
+            boton4_desde = -1;
+            return true;
+        }
+    } else {
+        boton4_desde = -1;
+    }
+
+    return false;
+}
+
+// =================================================
+// ESPERAR UN TIEMPO (en segundos), revisando
+// continuamente el botón de reinicio.
+// Devuelve true si se pidió reinicio.
+// =================================================
+
+bool esperarTiempo(float tiempoTotalSeg) {
+    unsigned long inicio = millis();
+    unsigned long totalMs = (unsigned long)(tiempoTotalSeg * 1000.0f);
+
+    while (diffMs(millis(), inicio) < totalMs) {
+        if (revisarBotonReinicio()) {
+            return true;
+        }
+        delay(5);
+    }
+    return false;
+}
 
 // =================================================
 // ESPERAR PARA INICIAR EL JUEGO
 //
-// Pulsación corta:
-//     inicia el juego
+// Pulsación corta: inicia el juego.
+// Pulsación larga:  NO inicia, espera una nueva.
 //
-// Pulsación larga:
-//     NO inicia
-//     espera una nueva pulsación
+// Si el botón quedó presionado al entrar (p.ej.
+// después de un reinicio), primero obliga a soltarlo.
 // =================================================
 
-void esperar_inicio() {
+void esperarInicio() {
+    Serial.println("Esperando inicio...");
+    apagarLeds();
 
-  Serial.println("Esperando inicio...");
-
-  apagar_leds();
-
-  // =============================================
-  // Si el botón está presionado al entrar,
-  // esperar hasta que sea soltado.
-  // =============================================
-
-  while (digitalRead(botones[4]) == HIGH) {
-    delay(10);
-  }
-
-  Serial.println("Botón liberado. Presione para comenzar.");
-
-
-  // =============================================
-  // Esperar una nueva pulsación
-  // =============================================
-
-  while (true) {
-
-    if (digitalRead(botones[4]) == HIGH) {
-
-      unsigned long inicio_pulsacion = millis();
-
-      // Esperar mientras esté presionado
-      while (digitalRead(botones[4]) == HIGH) {
-
-        unsigned long ahora = millis();
-
-        // =======================================
-        // ¿Pulsación larga?
-        // =======================================
-
-        if (ahora - inicio_pulsacion >= TIEMPO_REINICIO) {
-
-          Serial.println("Pulsación larga.");
-          Serial.println("No se inicia el juego.");
-
-          apagar_leds();
-
-          // Esperar a que suelte
-          while (digitalRead(botones[4]) == HIGH) {
-            delay(5);
-          }
-
-          // Volver a esperar una nueva pulsación
-          break;
-        }
-
-        delay(5);
-      }
-
-      // =========================================
-      // Si el botón se soltó antes de los 2 s
-      // =========================================
-
-      if (digitalRead(botones[4]) == LOW) {
-
-        unsigned long duracion =
-          millis() - inicio_pulsacion;
-
-        // Fue una pulsación corta
-        if (duracion < TIEMPO_REINICIO) {
-
-          Serial.println("INICIANDO JUEGO");
-
-          return;
-        }
-      }
+    while (digitalRead(PIN_BOTONES[4]) == HIGH) {
+        delay(10);
     }
+    Serial.println("Boton liberado. Presione para comenzar.");
 
-    delay(5);
-  }
+    while (true) {
+        if (digitalRead(PIN_BOTONES[4]) == HIGH) {
+
+            unsigned long inicioPulsacion = millis();
+            bool pulsacionLarga = false;
+
+            while (digitalRead(PIN_BOTONES[4]) == HIGH) {
+                unsigned long ahora = millis();
+
+                if (diffMs(ahora, inicioPulsacion) >= TIEMPO_REINICIO_MS) {
+                    Serial.println("Pulsacion larga.");
+                    Serial.println("No se inicia el juego.");
+
+                    apagarLeds();
+
+                    while (digitalRead(PIN_BOTONES[4]) == HIGH) {
+                        delay(5);
+                    }
+
+                    pulsacionLarga = true;
+                    break;
+                }
+                delay(5);
+            }
+
+            if (!pulsacionLarga) {
+                // El botón se soltó antes de los 2 segundos:
+                // pulsación corta -> iniciar juego.
+                Serial.println("INICIANDO JUEGO");
+                return;
+            }
+            // Si fue pulsación larga, se vuelve a esperar
+            // una nueva pulsación (continúa el while(true)).
+        }
+    }
 }
 
-
 // =================================================
-// ESPERAR MIENTRAS LED 20 PARPADEA
+// ESPERAR MIENTRAS EL LED DE RESPUESTA PARPADEA
 // Y RECIBIR RESPUESTAS
 //
 // Devuelve:
-// 0 -> error / tiempo agotado
-// 1 -> nivel completado
-// 2 -> reinicio solicitado
+//   NIVEL_ERROR         -> error / tiempo agotado
+//   NIVEL_OK            -> nivel completado
+//   REINICIO_SOLICITADO -> se pidió reinicio
 // =================================================
 
-int esperar_con_parpadeo(float tiempo_total, int nivel) {
-
-  unsigned long inicio = millis();
-
-  unsigned long ultimo_cambio = inicio;
-
-  // Estado LED 20
-  bool estado_led = false;
-
-  // Estado anterior de los botones 0-3
-  int estado_anterior[4] = {
-    LOW, LOW, LOW, LOW
-  };
-
-  // Posición de la secuencia
-  int posicion = 0;
-
-  // Última pulsación
-  unsigned long ultima_pulsacion = millis();
-
-  // LED correspondiente al botón pulsado
-  int led_pulsado = -1;
-
-  // Momento en que se encendió
-  unsigned long tiempo_led = 0;
-
-
-  // =============================================
-  // BUCLE PRINCIPAL
-  // =============================================
-
-  unsigned long duracion_total =
-    (unsigned long)(tiempo_total * 1000.0);
-
-  while (millis() - inicio < duracion_total) {
-
-    unsigned long ahora = millis();
-
-
-    // =========================================
-    // REVISAR BOTÓN 15
-    // =========================================
-
-    if (revisar_boton_reinicio()) {
-
-      return 2;
-    }
-
-
-    // =========================================
-    // TIEMPO TRANSCURRIDO
-    // =========================================
-
-    float transcurrido =
-      (millis() - inicio) / 1000.0;
-
-    float progreso =
-      transcurrido / tiempo_total;
-
-
-    // =========================================
-    // INTERVALO DINÁMICO DEL LED 20
-    // =========================================
-
-    float intervalo =
-      (0.5 - (0.45 * progreso)) / 2.0;
-
-
-    // =========================================
-    // PARPADEO LED 20
-    // =========================================
-
-    if (ahora - ultimo_cambio >=
-        (unsigned long)(intervalo * 1000.0)) {
-
-      if (estado_led == false) {
-        estado_led = true;
-      }
-      else {
-        estado_led = false;
-      }
-
-      digitalWrite(leds[4], estado_led);
-
-      ultimo_cambio = ahora;
-    }
-
-
-    // =========================================
-    // APAGAR LED DE LA PULSACIÓN
-    // =========================================
-
-    if (led_pulsado != -1) {
-
-      if (ahora - tiempo_led >= 350) {
-
-        digitalWrite(leds[led_pulsado], LOW);
-
-        led_pulsado = -1;
-      }
-    }
-
-
-    // =========================================
-    // LEER BOTONES 0-3
-    // =========================================
-
-    for (int i = 0; i < 4; i++) {
-
-      int estado_actual =
-        digitalRead(botones[i]);
-
-
-      // =======================================
-      // Detectar flanco 0 -> 1
-      // =======================================
-
-      if (estado_actual == HIGH &&
-          estado_anterior[i] == LOW) {
-
-
-        // =====================================
-        // Debounce
-        // =====================================
-
-        if (ahora - ultima_pulsacion >= 40) {
-
-          ultima_pulsacion = ahora;
-
-
-          // ===================================
-          // Encender LED correspondiente
-          // ===================================
-
-          digitalWrite(leds[i], HIGH);
-
-          led_pulsado = i;
-
-          tiempo_led = ahora;
-
-
-          // ===================================
-          // Número correspondiente
-          // ===================================
-
-          int respuesta = i;
-
-
-          // ===================================
-          // Comprobar respuesta
-          // ===================================
-
-          if (respuesta != lista[posicion]) {
-
-            Serial.println("ERROR");
-
-            digitalWrite(leds[4], LOW);
-
-            return 0;
-          }
-
-
-          // ===================================
-          // Respuesta correcta
-          // ===================================
-
-          posicion++;
-
-          Serial.println("Correcto");
-
-
-          // ===================================
-          // ¿Terminó el nivel?
-          // ===================================
-
-          if (posicion == nivel) {
-
-            digitalWrite(leds[4], LOW);
-
-            return 1;
-          }
+int esperarConParpadeo(float tiempoTotalSeg, int nivel, int vidasActuales) {
+    unsigned long inicio = millis();
+    unsigned long ultimoCambio = inicio;
+    unsigned long totalMs = (unsigned long)(tiempoTotalSeg * 1000.0f);
+
+    // Estado del LED de respuesta.
+    // Arranca ENCENDIDO para que el jugador vea de
+    // inmediato que puede empezar a ingresar el patrón.
+    int estadoLed = 1;
+    digitalWrite(PIN_LEDS[4], HIGH);
+
+    bool estadoAnterior[4] = {false, false, false, false};
+    int posicion = 0;
+    unsigned long ultimaPulsacion = millis();
+
+    // Momento (millis) en que se presionó cada botón
+    // (0-3). -1 significa "no está encendido / no
+    // aplica". Es un arreglo para poder apagar varios
+    // LEDs de forma independiente aunque se hayan
+    // presionado casi al mismo tiempo.
+    long tiempoLed[4] = {-1, -1, -1, -1};
+
+    while (diffMs(millis(), inicio) < totalMs) {
+
+        unsigned long ahora = millis();
+
+        // =========================================
+        // REVISAR BOTÓN DE REINICIO
+        // =========================================
+        if (revisarBotonReinicio()) {
+            return REINICIO_SOLICITADO;
         }
-      }
 
+        // =========================================
+        // TIEMPO TRANSCURRIDO / PROGRESO
+        // =========================================
+        float transcurrido = diffMs(ahora, inicio) / 1000.0f;
+        float progreso = transcurrido / tiempoTotalSeg;
 
-      // =======================================
-      // Guardar estado actual
-      // =======================================
+        // =========================================
+        // DISPLAY: TIEMPO EN VIVO
+        // (lo ya acumulado en niveles anteriores +
+        // lo que se lleva en este intento)
+        // =========================================
+        actualizarNumero(nivel, vidasActuales, tiempo_acumulado + transcurrido);
 
-      estado_anterior[i] = estado_actual;
+        // =========================================
+        // INTERVALO DINÁMICO DEL LED DE RESPUESTA
+        // =========================================
+        float intervalo = (0.5f - (0.45f * progreso)) / 2.0f;
+
+        // =========================================
+        // PARPADEO DEL LED DE RESPUESTA
+        // =========================================
+        if (diffMs(ahora, ultimoCambio) >= (unsigned long)(intervalo * 1000.0f)) {
+            estadoLed = (estadoLed == 0) ? 1 : 0;
+            digitalWrite(PIN_LEDS[4], estadoLed);
+            ultimoCambio = ahora;
+        }
+
+        // =========================================
+        // APAGAR LEDS DE PULSACIÓN (cada uno con su
+        // propio tiempo, sin perder el rastro de
+        // ninguno)
+        // =========================================
+        for (uint8_t j = 0; j < 4; j++) {
+            if (tiempoLed[j] != -1) {
+                if (diffMs(ahora, (unsigned long)tiempoLed[j]) >= 350) {
+                    digitalWrite(PIN_LEDS[j], LOW);
+                    tiempoLed[j] = -1;
+                }
+            }
+        }
+
+        // =========================================
+        // LEER BOTONES 0-3
+        // =========================================
+        for (uint8_t i = 0; i < 4; i++) {
+
+            bool estadoActual = digitalRead(PIN_BOTONES[i]) == HIGH;
+
+            // Detectar flanco 0 -> 1
+            if (estadoActual && !estadoAnterior[i]) {
+
+                // Debounce
+                if (diffMs(ahora, ultimaPulsacion) >= 40) {
+                    ultimaPulsacion = ahora;
+
+                    // Encender LED correspondiente
+                    digitalWrite(PIN_LEDS[i], HIGH);
+                    tiempoLed[i] = ahora;
+
+                    int respuesta = i;
+
+                    // Comprobar respuesta
+                    if (respuesta != lista[posicion]) {
+                        Serial.println("ERROR");
+                        digitalWrite(PIN_LEDS[4], LOW);
+
+                        float tiempoNivel = diffMs(ahora, inicio) / 1000.0f;
+                        acumularTiempo(tiempoNivel);
+                        actualizarNumero(nivel, vidasActuales, tiempo_acumulado);
+
+                        animacionEntradaIncorrecta();
+                        return NIVEL_ERROR;
+                    }
+
+                    // Respuesta correcta
+                    posicion++;
+                    Serial.println("Correcto");
+
+                    // ¿Terminó el nivel?
+                    if (posicion == nivel) {
+                        digitalWrite(PIN_LEDS[4], LOW);
+
+                        float tiempoNivel = diffMs(ahora, inicio) / 1000.0f;
+                        acumularTiempo(tiempoNivel);
+                        actualizarNumero(nivel, vidasActuales, tiempo_acumulado);
+
+                        animacionNivelSuperado();
+                        return NIVEL_OK;
+                    }
+                }
+            }
+
+            estadoAnterior[i] = estadoActual;
+        }
     }
-  }
 
+    // =============================================
+    // SE ACABÓ EL TIEMPO
+    // =============================================
+    digitalWrite(PIN_LEDS[4], LOW);
 
-  // =============================================
-  // SE ACABÓ EL TIEMPO
-  // =============================================
+    acumularTiempo(tiempoTotalSeg);
+    actualizarNumero(nivel, vidasActuales, tiempo_acumulado);
 
-  digitalWrite(leds[4], LOW);
-
-  return 0;
+    animacionAgotamientoTiempo();
+    return NIVEL_ERROR;
 }
 
+// =================================================
+// NÚCLEO 0: PROGRAMA PRINCIPAL DEL JUEGO
+// =================================================
 
-// =================================================
-// PROGRAMA PRINCIPAL
-// =================================================
+void setup() {
+    Serial.begin(115200);
+
+    randomSeed(micros());
+
+    for (uint8_t i = 0; i < 5; i++) {
+        pinMode(PIN_LEDS[i], OUTPUT);
+        digitalWrite(PIN_LEDS[i], LOW);
+    }
+
+    for (uint8_t i = 0; i < 5; i++) {
+        pinMode(PIN_BOTONES[i], INPUT_PULLDOWN);
+    }
+
+    // Estado inicial al energizar: Nivel 1, 3 Vidas,
+    // Tiempo 00, listo para que el jugador presione
+    // para iniciar.
+    actualizarNumero(1, 3, 0);
+}
 
 void loop() {
 
-  // =============================================
-  // ESPERAR AL BOTÓN 15 PARA INICIAR
-  // =============================================
+    // =============================================
+    // ESPERAR AL BOTÓN 4 PARA INICIAR
+    //
+    // El display NO se toca aquí: debe conservar lo
+    // último mostrado (estado inicial o resultado
+    // del juego anterior) hasta que el jugador
+    // presione para iniciar una nueva partida.
+    // =============================================
+    esperarInicio();
 
-  esperar_inicio();
-
-
-  // =============================================
-  // GENERAR SECUENCIA ALEATORIA
-  // =============================================
-
-  for (int i = 0; i < 9; i++) {
-
-    lista[i] = random(0, 4);
-  }
-
-
-  // =============================================
-  // REINICIAR VIDAS
-  // =============================================
-
-  vidas = 3;
-
-
-  // =============================================
-  // COMENZAR NIVEL 1
-  // =============================================
-
-  int nivel = 1;
-
-  bool reiniciar_juego = false;
-
-
-  // =============================================
-  // BUCLE DE NIVELES
-  // =============================================
-
-  while (nivel <= 9 && vidas > 0) {
-
-    Serial.print("Nivel: ");
-    Serial.println(nivel);
-
-    Serial.print("Vidas: ");
-    Serial.println(vidas);
-
-
-    // =========================================
-    // DETERMINAR TIEMPO
-    // =========================================
-
-    if (nivel <= 2) {
-
-      tiempo = 0.5;
+    // =============================================
+    // GENERAR SECUENCIA ALEATORIA
+    // =============================================
+    for (uint8_t i = 0; i < 9; i++) {
+        lista[i] = random(0, 4); // 0..3
     }
 
-    else if (nivel <= 4) {
+    // Reiniciar vidas y tiempo acumulado (nueva partida)
+    vidas = 3;
+    tiempo_acumulado = 0;
 
-      tiempo = 0.3;
+    int nivel = 1;
+    bool reiniciarJuego = false;
+
+    actualizarNumero(nivel, vidas, tiempo_acumulado);
+
+    // =============================================
+    // BUCLE DE NIVELES
+    // =============================================
+    while (nivel <= 9 && vidas > 0) {
+
+        Serial.print("Nivel: "); Serial.println(nivel);
+        Serial.print("Vidas: "); Serial.println(vidas);
+
+        actualizarNumero(nivel, vidas, tiempo_acumulado);
+
+        // Determinar tiempo entre LEDs según el nivel
+        if (nivel <= 2)      tiempo = 0.5f;
+        else if (nivel <= 4) tiempo = 0.3f;
+        else if (nivel <= 6) tiempo = 0.25f;
+        else if (nivel <= 8) tiempo = 0.2f;
+        else                 tiempo = 0.166f;
+
+        time_resp = 1.25f * (2.0f * tiempo * nivel);
+
+        // =========================================
+        // MOSTRAR SECUENCIA
+        // =========================================
+        for (uint8_t i = 0; i < (uint8_t)nivel; i++) {
+
+            digitalWrite(PIN_LEDS[lista[i]], HIGH);
+
+            if (esperarTiempo(tiempo)) {
+                reiniciarJuego = true;
+                break;
+            }
+
+            apagarLeds();
+
+            // Pausa entre un LED y el siguiente. NO se
+            // aplica tras el ÚLTIMO LED, para que la
+            // fase de respuesta comience de inmediato.
+            if (i < (uint8_t)(nivel - 1)) {
+                if (esperarTiempo(tiempo)) {
+                    reiniciarJuego = true;
+                    break;
+                }
+            }
+        }
+
+        if (reiniciarJuego) break;
+
+        // =========================================
+        // TIEMPO DE RESPUESTA
+        // =========================================
+        int resultado = esperarConParpadeo(time_resp, nivel, vidas);
+
+        if (resultado == REINICIO_SOLICITADO) {
+            reiniciarJuego = true;
+            break;
+        }
+
+        if (resultado == NIVEL_OK) {
+            Serial.println("Nivel superado");
+            nivel += 1;
+        } else {
+            // Animación de pérdida de vida: parpadea con
+            // el valor ANTERIOR, y DESPUÉS se resta la vida.
+            animacionPerdidaVida();
+            vidas -= 1;
+
+            Serial.print("Vidas restantes: "); Serial.println(vidas);
+
+            if (vidas > 0) {
+                Serial.println("Repitiendo nivel...");
+            } else {
+                Serial.println("GAME OVER");
+            }
+        }
+
+        actualizarNumero(nivel, vidas, tiempo_acumulado);
+        apagarLeds();
+
+        if (esperarTiempo(0.4f)) {
+            reiniciarJuego = true;
+            break;
+        }
     }
 
-    else if (nivel <= 6) {
+    // =================================================
+    // JUEGO REINICIADO
+    // =================================================
+    if (reiniciarJuego) {
+        Serial.println("======================");
+        Serial.println("JUEGO REINICIADO");
+        Serial.println("======================");
 
-      tiempo = 0.25;
+        apagarLeds();
+
+        // A diferencia de GAME OVER / GANASTE, el
+        // reinicio manual sí vuelve al estado inicial.
+        actualizarNumero(1, 3, 0);
+
+        // loop() volverá a llamar a esperarInicio(),
+        // así que el juego queda detenido hasta una
+        // nueva pulsación corta.
     }
+    // =================================================
+    // GANÓ
+    // =================================================
+    else if (nivel > 9) {
+        Serial.println("======================");
+        Serial.println("GANASTE!");
+        Serial.println("======================");
+        Serial.print("Tiempo acumulado final: ");
+        Serial.println(tiempo_acumulado);
 
-    else if (nivel <= 8) {
+        animacionVictoria();
+        apagarLeds();
 
-      tiempo = 0.2;
+        if (esperarTiempo(2.0f)) {
+            Serial.println("Reinicio despues de ganar.");
+        }
     }
-
+    // =================================================
+    // GAME OVER
+    // =================================================
     else {
-
-      tiempo = 0.166;
-    }
-
-
-    // =========================================
-    // TIEMPO DE RESPUESTA
-    // =========================================
-
-    time_resp =
-      1.25 * (2.0 * tiempo * nivel);
-
-
-    // =========================================
-    // MOSTRAR SECUENCIA
-    // =========================================
-
-    for (int i = 0; i < nivel; i++) {
-
-      // ---------------------------------------
-      // Encender LED correspondiente
-      // ---------------------------------------
-
-      digitalWrite(leds[lista[i]], HIGH);
-
-
-      // ---------------------------------------
-      // Esperar mientras se vigila botón 15
-      // ---------------------------------------
-
-      if (esperar_tiempo(tiempo)) {
-
-        reiniciar_juego = true;
-
-        break;
-      }
-
-
-      // ---------------------------------------
-      // Apagar LEDs
-      // ---------------------------------------
-
-      apagar_leds();
-
-
-      // ---------------------------------------
-      // Esperar mientras se vigila botón 15
-      // ---------------------------------------
-
-      if (esperar_tiempo(tiempo)) {
-
-        reiniciar_juego = true;
-
-        break;
-      }
-    }
-
-
-    // =========================================
-    // ¿SE SOLICITÓ REINICIO?
-    // =========================================
-
-    if (reiniciar_juego) {
-      break;
-    }
-
-
-    // =========================================
-    // TIEMPO DE RESPUESTA
-    // =========================================
-
-    int resultado =
-      esperar_con_parpadeo(time_resp, nivel);
-
-
-    // =========================================
-    // ¿SE SOLICITÓ REINICIO?
-    // =========================================
-
-    if (resultado == 2) {
-
-      reiniciar_juego = true;
-
-      break;
-    }
-
-
-    // =========================================
-    // COMPROBAR RESULTADO
-    // =========================================
-
-    if (resultado == 1) {
-
-      Serial.println("Nivel superado");
-
-      nivel++;
-    }
-
-    else {
-
-      vidas--;
-
-      Serial.print("Vidas restantes: ");
-      Serial.println(vidas);
-
-      if (vidas > 0) {
-
-        Serial.println("Repitiendo nivel...");
-      }
-
-      else {
-
+        Serial.println("======================");
         Serial.println("GAME OVER");
-      }
+        Serial.println("======================");
+        Serial.print("Tiempo acumulado final: ");
+        Serial.println(tiempo_acumulado);
+
+        apagarLeds();
+
+        if (esperarTiempo(1.0f)) {
+            Serial.println("Reinicio despues de GAME OVER.");
+        }
     }
 
+    // loop() termina aquí y Arduino lo vuelve a llamar,
+    // equivalente a una nueva vuelta del while(True)
+    // externo del programa original.
+}
 
-    // =========================================
-    // APAGAR TODOS LOS LEDS
-    // =========================================
+// =================================================
+// NÚCLEO 1: SOLO MULTIPLEXA EL DISPLAY DE 7 SEGMENTOS
+// =================================================
 
-    apagar_leds();
-
-
-    // =========================================
-    // PEQUEÑA ESPERA
-    // TAMBIÉN VIGILANDO BOTÓN 15
-    // =========================================
-
-    if (esperar_tiempo(0.4)) {
-
-      reiniciar_juego = true;
-
-      break;
+void setup1() {
+    for (uint8_t i = 0; i < 7; i++) {
+        pinMode(PIN_SEG[i], OUTPUT);
     }
-  }
-
-
-  // =================================================
-  // JUEGO REINICIADO
-  // =================================================
-
-  if (reiniciar_juego) {
-
-    Serial.println("======================");
-    Serial.println("JUEGO REINICIADO");
-    Serial.println("======================");
-
-    apagar_leds();
-
-    // El loop() vuelve a comenzar y llama
-    // nuevamente a esperar_inicio().
-  }
-
-
-  // =================================================
-  // GANÓ
-  // =================================================
-
-  else if (nivel > 9) {
-
-    Serial.println("======================");
-    Serial.println("¡GANASTE!");
-    Serial.println("======================");
-
-    apagar_leds();
-
-    // Esperar 2 segundos vigilando botón 15
-    if (esperar_tiempo(2)) {
-
-      Serial.println("Reinicio después de ganar.");
+    for (uint8_t i = 0; i < 4; i++) {
+        pinMode(PIN_DIG[i], OUTPUT);
     }
-  }
+    apagarDigitos();
+}
 
-
-  // =================================================
-  // GAME OVER
-  // =================================================
-
-  else {
-
-    Serial.println("======================");
-    Serial.println("GAME OVER");
-    Serial.println("======================");
-
-    apagar_leds();
-
-    // Esperar 1 segundo vigilando botón 15
-    if (esperar_tiempo(1)) {
-
-      Serial.println("Reinicio después de GAME OVER.");
-    }
-  }
+void loop1() {
+    multiplexar();
 }

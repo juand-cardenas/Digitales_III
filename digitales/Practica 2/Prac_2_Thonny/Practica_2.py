@@ -55,7 +55,10 @@ tabla_7seg = {
     6: (1,0,1,1,1,1,1),
     7: (1,1,1,0,0,0,0),
     8: (1,1,1,1,1,1,1),
-    9: (1,1,1,1,0,1,1)
+    9: (1,1,1,1,0,1,1),
+    # 10 = dígito en blanco (todos los segmentos apagados)
+    # se usa para parpadear el número de vidas
+    10: (0,0,0,0,0,0,0)
 }
 
 # -------------------------------------------------
@@ -225,6 +228,188 @@ def actualizar_numero(n_nivel, n_vidas, n_tiempo):
     numero[1] = n_vidas if 0 <= n_vidas <= 9 else 9
     numero[2] = entero
     numero[3] = decimal
+
+
+# =================================================
+# ESPERAR X MILISEGUNDOS SIN CONGELAR EL DISPLAY
+#
+# Igual que time.sleep_ms(), pero sigue
+# multiplexando los 7 segmentos mientras espera.
+# Se usa dentro de las animaciones de eventos.
+# =================================================
+
+def esperar_ms_con_display(ms):
+
+    inicio = time.ticks_ms()
+
+    while time.ticks_diff(time.ticks_ms(), inicio) < ms:
+
+        multiplexar()
+
+        time.sleep_ms(2)
+
+
+# =================================================
+# ANIMACIÓN: SECUENCIA CORRECTA (NIVEL SUPERADO)
+#
+# Barrido rápido, una sola pasada, LED 0 -> LED 3.
+# =================================================
+
+def animacion_nivel_superado():
+
+    apagar_leds()
+
+    for i in range(4):
+
+        leds[i].value(1)
+
+        esperar_ms_con_display(60)
+
+        leds[i].value(0)
+
+
+# =================================================
+# ANIMACIÓN: ENTRADA INCORRECTA
+#
+# Los 4 LEDs (0-3) encienden juntos y parpadean
+# 2 veces.
+# =================================================
+
+def animacion_entrada_incorrecta():
+
+    apagar_leds()
+
+    for _ in range(2):
+
+        for i in range(4):
+
+            leds[i].value(1)
+
+        esperar_ms_con_display(150)
+
+        apagar_leds()
+
+        esperar_ms_con_display(100)
+
+
+# =================================================
+# ANIMACIÓN: SE AGOTÓ EL TIEMPO
+#
+# Solo el LED de respuesta (16 / leds[4])
+# parpadea 3 veces.
+# =================================================
+
+# =================================================
+# ANIMACIÓN: SE AGOTÓ EL TIEMPO
+#
+# El LED 20 (leds[4]) se queda ENCENDIDO fijo,
+# y son los dígitos de TIEMPO (unidades y
+# décimas) los que parpadean en el 7 segmentos.
+# =================================================
+
+def animacion_agotamiento_tiempo():
+
+    leds[4].value(1)
+
+    unidades_actual = numero[2]
+    decimas_actual = numero[3]
+
+    for _ in range(4):
+
+        numero[2] = 10   # blanco
+        numero[3] = 10   # blanco
+
+        esperar_ms_con_display(150)
+
+        numero[2] = unidades_actual
+        numero[3] = decimas_actual
+
+        esperar_ms_con_display(150)
+
+    leds[4].value(0)
+
+
+# =================================================
+# ANIMACIÓN: PÉRDIDA DE VIDA
+#
+# Parpadea SOLO el dígito de vidas en el 7
+# segmentos (con el valor ANTERIOR, antes de
+# bajarlo), para avisar que se perdió una vida.
+#
+# Mientras esto ocurre, los otros 3 dígitos se
+# quedan apagados brevemente: es una animación
+# corta e intencionalmente "propia" de este
+# dígito, distinta a cualquier otra señal.
+# =================================================
+
+# =================================================
+# ANIMACIÓN: PÉRDIDA DE VIDA
+#
+# Parpadea SOLO el dígito de vidas en el 7
+# segmentos (con el valor ANTERIOR, antes de
+# bajarlo), para avisar que se perdió una vida.
+#
+# Los otros 3 dígitos (nivel y tiempo) se
+# mantienen encendidos normalmente durante el
+# parpadeo, ya que se usa multiplexar() en vez
+# de apagar todos los dígitos.
+# =================================================
+
+def animacion_perdida_vida(veces=3, duracion_ms=150):
+
+    valor_actual = numero[1]
+
+    for _ in range(veces):
+
+        numero[1] = 10   # blanco
+
+        esperar_ms_con_display(duracion_ms)
+
+        numero[1] = valor_actual
+
+        esperar_ms_con_display(duracion_ms)
+
+
+# =================================================
+# ANIMACIÓN: FINALIZACIÓN EXITOSA (GANASTE)
+#
+# Barrido ida y vuelta (tipo "KITT") x2,
+# seguido de 3 destellos con los 4 LEDs juntos.
+# =================================================
+
+def animacion_victoria():
+
+    apagar_leds()
+
+    for _ in range(2):
+
+        for i in range(4):
+
+            leds[i].value(1)
+
+            esperar_ms_con_display(50)
+
+            leds[i].value(0)
+
+        for i in range(2, -1, -1):
+
+            leds[i].value(1)
+
+            esperar_ms_con_display(50)
+
+            leds[i].value(0)
+
+    for _ in range(3):
+
+        for i in range(4):
+
+            leds[i].value(1)
+
+        esperar_ms_con_display(120)
+
+        apagar_leds()
+
+        esperar_ms_con_display(120)
 
 
 # =================================================
@@ -494,11 +679,17 @@ def esperar_con_parpadeo(tiempo_total, nivel, vidas_actuales):
     # Última pulsación
     ultima_pulsacion = time.ticks_ms()
 
-    # LED correspondiente al botón pulsado
-    led_pulsado = -1
+    # Momento en que se presionó cada botón (0-3).
+    #
+    # Es un arreglo (uno por botón) para poder
+    # apagar varios LEDs de forma independiente,
+    # aunque se hayan presionado casi al mismo
+    # tiempo. Antes era una sola variable y por
+    # eso una pulsación nueva "perdía" el rastro
+    # de la anterior, dejándola encendida para
+    # siempre.
 
-    # Momento en que se encendió
-    tiempo_led = 0
+    tiempo_led = [None, None, None, None]
 
     # =============================================
     # BUCLE PRINCIPAL
@@ -564,16 +755,22 @@ def esperar_con_parpadeo(tiempo_total, nivel, vidas_actuales):
             ultimo_cambio = ahora
 
         # =========================================
-        # APAGAR LED DE LA PULSACIÓN
+        # APAGAR LEDS DE PULSACIÓN
+        #
+        # Se revisan los 4, cada uno con su propio
+        # tiempo, para poder apagar varios a la vez
+        # sin perder el rastro de ninguno.
         # =========================================
 
-        if led_pulsado != -1:
+        for j in range(4):
 
-            if time.ticks_diff(ahora,tiempo_led) >= 350:
+            if tiempo_led[j] is not None:
 
-                leds[led_pulsado].value(0)
+                if time.ticks_diff(ahora, tiempo_led[j]) >= 350:
 
-                led_pulsado = -1
+                    leds[j].value(0)
+
+                    tiempo_led[j] = None
 
         # =========================================
         # LEER BOTONES 0-3
@@ -603,9 +800,7 @@ def esperar_con_parpadeo(tiempo_total, nivel, vidas_actuales):
 
                     leds[i].value(1)
 
-                    led_pulsado = i
-
-                    tiempo_led = ahora
+                    tiempo_led[i] = ahora
 
                     # -----------------------------
                     # Número correspondiente
@@ -633,6 +828,8 @@ def esperar_con_parpadeo(tiempo_total, nivel, vidas_actuales):
                         acumular_tiempo(tiempo_nivel)
 
                         actualizar_numero(nivel, vidas_actuales, tiempo_acumulado)
+
+                        animacion_entrada_incorrecta()
 
                         return False
 
@@ -669,6 +866,8 @@ def esperar_con_parpadeo(tiempo_total, nivel, vidas_actuales):
 
                         actualizar_numero(nivel, vidas_actuales, tiempo_acumulado)
 
+                        animacion_nivel_superado()
+
                         return True
 
             # -------------------------------------
@@ -691,6 +890,8 @@ def esperar_con_parpadeo(tiempo_total, nivel, vidas_actuales):
     acumular_tiempo(tiempo_total)
 
     actualizar_numero(nivel, vidas_actuales, tiempo_acumulado)
+
+    animacion_agotamiento_tiempo()
 
     return False
 
@@ -886,6 +1087,15 @@ while True:
 
         else:
 
+            # =====================================
+            # ANIMACIÓN: PÉRDIDA DE VIDA
+            #
+            # Se parpadea el dígito con el valor
+            # ANTERIOR, y DESPUÉS se resta la vida.
+            # =====================================
+
+            animacion_perdida_vida()
+
             vidas -= 1
 
             print("Vidas restantes:", vidas)
@@ -963,6 +1173,8 @@ while True:
         print("======================")
 
         print("Tiempo acumulado final:", tiempo_acumulado)
+
+        animacion_victoria()
 
         apagar_leds()
 

@@ -6,7 +6,7 @@ import random
 # CONFIGURACIÓN
 # =================================================
 
-# LEDs
+# LEDs son los pines de los leds, el pint 16 es el led de abertencia.
 leds = [
     Pin(20, Pin.OUT),
     Pin(19, Pin.OUT),
@@ -16,10 +16,10 @@ leds = [
 ]
 
 # Botones
-# Botón 0 -> LED 16 -> número 0
-# Botón 1 -> LED 17 -> número 1
+# Botón 0 -> LED 20 -> número 0
+# Botón 1 -> LED 19 -> número 1
 # Botón 2 -> LED 18 -> número 2
-# Botón 3 -> LED 19 -> número 3
+# Botón 3 -> LED 17 -> número 3
 # Botón 4 -> INICIO / REINICIO
 botones = [
     Pin(0, Pin.IN, Pin.PULL_DOWN),
@@ -33,18 +33,15 @@ botones = [
 # DISPLAY DE 7 SEGMENTOS (4 DÍGITOS MULTIPLEXADOS)
 # =================================================
 
-# Segmentos (a, b, c, d, e, f, g)
+# Segmentos (a, b, c, d, e, f, g), se configura los pines de salida para el 7 segemnto
+#unsado un for que va desde 6 a 13
 seg = [Pin(i, Pin.OUT) for i in range(6, 13)]
 
-# Dígitos (común de cada display)
-dig = [
-    Pin(13, Pin.OUT),
-    Pin(14, Pin.OUT),
-    Pin(15, Pin.OUT),
-    Pin(21, Pin.OUT)
+# Son los que uso para encender el bloque de los segementos.
+dig = [ Pin(13, Pin.OUT), Pin(14, Pin.OUT), Pin(15, Pin.OUT), Pin(21, Pin.OUT)
 ]
 
-# Tabla de patrones para cada número 0-9
+# Tabla (diccionario) de acceso rapido, para saber que leds de los 7 enciendo para cada numero
 tabla_7seg = {
     0: (1,1,1,1,1,1,0),
     1: (0,1,1,0,0,0,0),
@@ -56,7 +53,6 @@ tabla_7seg = {
     7: (1,1,1,0,0,0,0),
     8: (1,1,1,1,1,1,1),
     9: (1,1,1,1,0,1,1),
-    # 10 = dígito en blanco (todos los segmentos apagados)
     # se usa para parpadear el número de vidas
     10: (0,0,0,0,0,0,0)
 }
@@ -67,18 +63,20 @@ tabla_7seg = {
 # numero[2] -> Unidades del tiempo transcurrido
 # numero[3] -> Décimas del tiempo transcurrido
 # -------------------------------------------------
-
+#Sirve para saber que se debe ver en los 7 segmentos
 numero = [0, 0, 0, 0]
 
+#------------------------------------------------------
 # Variables de multiplexación (independientes del
 # resto del juego, para no chocar con otras
 # variables llamadas "intervalo" o "posicion")
-
-posicion_display = 0
+posicion_display = 0#Es una variable que indica qué display de los 4 estamos controlando en este momento.
 ultimo_cambio_display = time.ticks_ms()
-
+#controlan el "barrido" — cada 2 ms se apaga todo, se prepara el patrón
+#del siguiente dígito, y se enciende ese dígito.
 # Tiempo que permanece encendido cada dígito (ms)
 INTERVALO_DISPLAY = 2
+#-----------------------------------------------------
 
 # Tiempo necesario para reiniciar
 TIEMPO_REINICIO = 2000       # 2 segundos
@@ -91,12 +89,12 @@ TIEMPO_ACUMULADO_MAX = 9.9    # segundos
 # VARIABLES
 # =================================================
 
-tiempo = 0
-time_resp = 0
-vidas = 3
+tiempo = 0 #duración con la que se muestra cada LED de la secuencia (varía según el nivel).
+time_resp = 0 #tiempo total que tiene el jugador para responder un nivel.
+vidas = 3 #vidas restantes (empieza en 3).
 tiempo_trans = 0
 
-lista = [0] * 10
+lista = [0] * 10 #arreglo de 10 posiciones con números aleatorios 0-3 que forman la secuencia del nivel actual.
 
 # -------------------------------------------------
 # Tiempo acumulado que el jugador tarda en
@@ -105,25 +103,20 @@ lista = [0] * 10
 #
 # Se va sumando nivel a nivel y deja de acumular
 # al llegar a TIEMPO_ACUMULADO_MAX (9.9 s).
-# -------------------------------------------------
-
-tiempo_acumulado = 0
+tiempo_acumulado = 0 #suma de los tiempos que el jugador tarda en completar cada nivel correctamente,
+# limitado a TIEMPO_ACUMULADO_MAX = 9.9 segundos.
 
 
 # -------------------------------------------------
 # IMPORTANTE:
-# Guarda desde cuándo se está presionando
 # el botón 15.
-#
-# Esta variable NO pertenece a una función,
-# por lo que conserva su valor entre llamadas.
-# -------------------------------------------------
-
-boton15_desde = None
-
+#guarda el instante en que empezó a presionarse el botón de inicio/reinicio
+#(para medir si es pulsación larga o corta).
+boton15_desde = None #ahora es otro numero.
+#---------------------------------------------------
 
 # =================================================
-# APAGAR TODOS LOS LEDS
+# apaga los 5 LEDs
 # =================================================
 
 def apagar_leds():
@@ -133,7 +126,8 @@ def apagar_leds():
 
 
 # =================================================
-# DISPLAY: APAGAR TODOS LOS DÍGITOS
+# DISPLAY: APAGAR TODOS LOS DÍGITOS, pone en 1
+#(apagado, porque el común es activo en bajo) los 4 pines de dígito del display.
 # =================================================
 
 def apagar_digitos():
@@ -148,7 +142,7 @@ def apagar_digitos():
 
 def escribir_segmentos(n):
 
-    patron = tabla_7seg[n]
+    patron = tabla_7seg[n] #se obtiene la secuencia de (1,1,1,1,0,0,1) dependiendo de n
 
     for i in range(7):
 
@@ -171,18 +165,18 @@ def escribir_segmentos(n):
 
 def multiplexar():
 
-    global posicion_display
+    global posicion_display #Es una variable que indica qué display de los 4 estamos controlando en este momento.
     global ultimo_cambio_display
 
     ahora = time.ticks_ms()
 
-    if time.ticks_diff(ahora, ultimo_cambio_display) >= INTERVALO_DISPLAY:
+    if time.ticks_diff(ahora, ultimo_cambio_display) >= INTERVALO_DISPLAY: #reviso si han pasado dos ms desde la variable ahora fue ejecutada
 
-        apagar_digitos()
+        apagar_digitos()#Apaga todos los dígitos.
 
-        escribir_segmentos(numero[posicion_display])
+        escribir_segmentos(numero[posicion_display]) #me dice que cosa tomar de numero y convertirlo en 7 segemto.
 
-        dig[posicion_display].value(0)
+        dig[posicion_display].value(0) #Enciende solo ese bloque.
 
         posicion_display += 1
 
@@ -190,7 +184,7 @@ def multiplexar():
 
             posicion_display = 0
 
-        ultimo_cambio_display = ahora
+        ultimo_cambio_display = ahora #esta variable sirve como referencia para medir cuánto tiempo ha pasado desde el último cambio.
 
 
 # =================================================
@@ -212,7 +206,7 @@ def actualizar_numero(n_nivel, n_vidas, n_tiempo):
 
     entero = int(n_tiempo)
 
-    decimal = int(round((n_tiempo - entero) * 10))
+    decimal = int(round((n_tiempo - entero) * 10))#me da la parte decimal.
 
     if decimal >= 10:
 
@@ -225,19 +219,15 @@ def actualizar_numero(n_nivel, n_vidas, n_tiempo):
         entero = 9
 
     numero[0] = n_nivel if 0 <= n_nivel <= 9 else 9
-    numero[1] = n_vidas if 0 <= n_vidas <= 9 else 9
+    numero[1] = n_vidas if 0 <= n_vidas <= 3 else 3
     numero[2] = entero
     numero[3] = decimal
 
 
 # =================================================
 # ESPERAR X MILISEGUNDOS SIN CONGELAR EL DISPLAY
-#
-# Igual que time.sleep_ms(), pero sigue
-# multiplexando los 7 segmentos mientras espera.
-# Se usa dentro de las animaciones de eventos.
 # =================================================
-
+#es para mantner los 7 segmentos funcioanndo mientar corurre una animacion de evento
 def esperar_ms_con_display(ms):
 
     inicio = time.ticks_ms()
@@ -291,18 +281,10 @@ def animacion_entrada_incorrecta():
 
         esperar_ms_con_display(100)
 
-
 # =================================================
 # ANIMACIÓN: SE AGOTÓ EL TIEMPO
 #
-# Solo el LED de respuesta (16 / leds[4])
-# parpadea 3 veces.
-# =================================================
-
-# =================================================
-# ANIMACIÓN: SE AGOTÓ EL TIEMPO
-#
-# El LED 20 (leds[4]) se queda ENCENDIDO fijo,
+# El LED 16 (leds[4]) se queda ENCENDIDO fijo,
 # y son los dígitos de TIEMPO (unidades y
 # décimas) los que parpadean en el 7 segmentos.
 # =================================================
@@ -328,31 +310,12 @@ def animacion_agotamiento_tiempo():
 
     leds[4].value(0)
 
-
 # =================================================
 # ANIMACIÓN: PÉRDIDA DE VIDA
 #
 # Parpadea SOLO el dígito de vidas en el 7
 # segmentos (con el valor ANTERIOR, antes de
 # bajarlo), para avisar que se perdió una vida.
-#
-# Mientras esto ocurre, los otros 3 dígitos se
-# quedan apagados brevemente: es una animación
-# corta e intencionalmente "propia" de este
-# dígito, distinta a cualquier otra señal.
-# =================================================
-
-# =================================================
-# ANIMACIÓN: PÉRDIDA DE VIDA
-#
-# Parpadea SOLO el dígito de vidas en el 7
-# segmentos (con el valor ANTERIOR, antes de
-# bajarlo), para avisar que se perdió una vida.
-#
-# Los otros 3 dígitos (nivel y tiempo) se
-# mantienen encendidos normalmente durante el
-# parpadeo, ya que se usa multiplexar() en vez
-# de apagar todos los dígitos.
 # =================================================
 
 def animacion_perdida_vida(veces=3, duracion_ms=150):
@@ -391,7 +354,7 @@ def animacion_victoria():
 
             leds[i].value(0)
 
-        for i in range(2, -1, -1):
+        for i in range(2, -1, -1): #range(inicio, final, paso)
 
             leds[i].value(1)
 
@@ -434,11 +397,11 @@ def acumular_tiempo(segundos):
 
             tiempo_acumulado = TIEMPO_ACUMULADO_MAX
 
-    print("Tiempo acumulado:", tiempo_acumulado)
+   
 
 
 # =================================================
-# REVISAR BOTÓN 15
+# REVISAR BOTÓN 16
 #
 # Devuelve:
 #
@@ -452,23 +415,17 @@ def acumular_tiempo(segundos):
 def revisar_boton_reinicio():
 
     global boton15_desde
-
-    # Mantener el display encendido mientras
-    # se revisa el botón de reinicio
+    # Mantener el display encendido mientras se revisa el botón de reinicio
     multiplexar()
-
     ahora = time.ticks_ms()
-
     # =============================================
     # BOTÓN PRESIONADO
     # =============================================
 
     if botones[4].value() == 1:
-
         # -----------------------------------------
         # Primera vez que detectamos la pulsación
         # -----------------------------------------
-
         if boton15_desde is None:
 
             boton15_desde = ahora
@@ -484,13 +441,9 @@ def revisar_boton_reinicio():
             apagar_leds()
 
             # -------------------------------------
-            # Esperar a que el usuario SUELTE
-            # el botón.
-            #
+            # Esperar a que el usuario SUELTE el botón.
             # Esto evita que después del reinicio
-            # el mismo botón vuelva a iniciar
-            # automáticamente.
-            # -------------------------------------
+            # el mismo botón vuelva a iniciar automáticamente.
 
             while botones[4].value() == 1:
 
@@ -504,9 +457,7 @@ def revisar_boton_reinicio():
 
     else:
 
-        # -----------------------------------------
-        # El botón está suelto
-        # -----------------------------------------
+        # El botón está suelto, no ha sido precionado
 
         boton15_desde = None
 
@@ -514,7 +465,8 @@ def revisar_boton_reinicio():
 
 
 # =================================================
-# ESPERAR UN TIEMPO
+# ESPERAR UN TIEMPO, una funcion echa como delay, como no se puede dejar de multiplxar ni de reviar el
+#boton de reinicio, esto lo hace minetra se "espera"
 #
 # Mientras espera, revisa continuamente
 # el botón 15.
@@ -538,7 +490,6 @@ def esperar_tiempo(tiempo_total):
         if revisar_boton_reinicio():
 
             return True
-
         # Espera pequeña
         time.sleep_ms(5)
 
@@ -551,25 +502,14 @@ def esperar_tiempo(tiempo_total):
 # Pulsación corta:
 #     inicia el juego
 #
-# Pulsación larga:
-#     NO inicia
-#     espera una nueva pulsación
-#
 # Si el botón quedó presionado después de un
 # reinicio, primero obliga a soltarlo.
 # =================================================
 
 def esperar_inicio():
 
-    print("Esperando inicio...")
-
     apagar_leds()
-
-    # =============================================
-    # Si el botón está presionado al entrar,
-    # esperar hasta que sea soltado.
-    # =============================================
-
+    # Si el botón está presionado al entrar, esperar hasta que sea soltado.
     while botones[4].value() == 1:
 
         multiplexar()
@@ -578,15 +518,10 @@ def esperar_inicio():
 
     print("Botón liberado. Presione para comenzar.")
 
-    # =============================================
-    # Esperar una nueva pulsación
-    # =============================================
-
     while True:
 
         # Mantener el display encendido MIENTRAS
-        # se espera la pulsación (antes esto no
-        # se llamaba y el display se congelaba)
+        # se espera la pulsación (antes esto no se llamaba y el display se congelaba)
         multiplexar()
 
         if botones[4].value() == 1:
@@ -634,9 +569,7 @@ def esperar_inicio():
 
                 # ---------------------------------
                 # El botón se soltó antes de los
-                # 2 segundos.
-                #
-                # Es una pulsación corta.
+                # 2 segundos.Es una pulsación corta.
                 # ---------------------------------
 
                 print("INICIANDO JUEGO")
@@ -644,71 +577,45 @@ def esperar_inicio():
                 return
 
 
-# =================================================
-# ESPERAR MIENTRAS LED 20 PARPADEA
-# Y RECIBIR RESPUESTAS
-#
+
+# ESPERAR MIENTRAS LED 20 PARPADEA Y RECIBIR RESPUESTAS
 # False -> error / tiempo agotado
 # True  -> nivel completado
 # None  -> reinicio solicitado
-# =================================================
-
 def esperar_con_parpadeo(tiempo_total, nivel, vidas_actuales):
-
     global tiempo_acumulado
-
     inicio = time.ticks_ms()
-    ultimo_cambio = inicio
-
-    # Estado LED 20
-    #
+    ultimo_cambio = inicio #guarda cuándo fue la última vez que cambió el estado del LED 20.
     # Arranca ENCENDIDO para que el jugador vea
-    # de inmediato que puede empezar a ingresar
-    # el patrón, sin esperar el primer intervalo.
-
+    # de inmediato que puede empezar a ingresar el patrón, sin esperar el primer intervalo.
     estado_led = 1
-
     leds[4].value(1)
-
     # Estado anterior de los botones 0-3
     estado_anterior = [0, 0, 0, 0]
-
     # Posición de la secuencia
-    posicion = 0
-
+    posicion = 0 #Indica qué elemento de la secuencia se debe introducir
     # Última pulsación
     ultima_pulsacion = time.ticks_ms()
 
     # Momento en que se presionó cada botón (0-3).
-    #
     # Es un arreglo (uno por botón) para poder
     # apagar varios LEDs de forma independiente,
     # aunque se hayan presionado casi al mismo
     # tiempo. Antes era una sola variable y por
     # eso una pulsación nueva "perdía" el rastro
-    # de la anterior, dejándola encendida para
-    # siempre.
+    # de la anterior, dejándola encendida para siempre.
 
-    tiempo_led = [None, None, None, None]
-
+    tiempo_led = [None, None, None, None] #arreglo que guarda cuándo se encendió cada LED de respuesta,
+    #para poder apagarlo automáticamente pasados 350 ms sin perder el rastro de otros LEDs encendidos simultáneamente
     # =============================================
     # BUCLE PRINCIPAL
-    # =============================================
-
-    while time.ticks_diff(time.ticks_ms(),inicio) < tiempo_total * 1000:
+    while time.ticks_diff(time.ticks_ms(),inicio) < tiempo_total * 1000: #el 1000 es para convertir de s a ms
 
         ahora = time.ticks_ms()
-
-        # =========================================
-        # DISPLAY: MANTENER ENCENDIDO
-        # =========================================
-
         multiplexar()
-
         # =========================================
         # REVISAR BOTÓN 15
         # =========================================
-
         if revisar_boton_reinicio():
 
             return None
@@ -717,8 +624,7 @@ def esperar_con_parpadeo(tiempo_total, nivel, vidas_actuales):
         # TIEMPO TRANSCURRIDO
         # =========================================
 
-        transcurrido = time.ticks_diff(ahora, inicio) / 1000
-
+        transcurrido = time.ticks_diff(ahora, inicio) / 1000 #tiempo trancurrudo desde que empezo el nivel.
         progreso = transcurrido / tiempo_total
 
         # =========================================
@@ -752,16 +658,11 @@ def esperar_con_parpadeo(tiempo_total, nivel, vidas_actuales):
 
             leds[4].value(estado_led)
 
-            ultimo_cambio = ahora
+            ultimo_cambio = ahora #despues de esto, empiza a contar el tiempo de parpadeo de nuevo
 
+        # Se revisan los 4 leds para apagar los leds encedidos por los botones, cada uno con su propio
+        # tiempo, para poder apagar varios a la vez sin perder el rastro de ninguno.
         # =========================================
-        # APAGAR LEDS DE PULSACIÓN
-        #
-        # Se revisan los 4, cada uno con su propio
-        # tiempo, para poder apagar varios a la vez
-        # sin perder el rastro de ninguno.
-        # =========================================
-
         for j in range(4):
 
             if tiempo_led[j] is not None:
@@ -898,31 +799,20 @@ def esperar_con_parpadeo(tiempo_total, nivel, vidas_actuales):
 
 # =================================================
 # PROGRAMA PRINCIPAL
-# =================================================
 
 apagar_digitos()
-
-# =================================================
 # DISPLAY: ESTADO INICIAL AL ENERGIZAR
-#
-# Muestra Nivel 1, 3 Vidas y Tiempo 00, listo
-# para que el jugador presione para iniciar.
+# Muestra Nivel 1, 3 Vidas y Tiempo 00
 # =================================================
 
 actualizar_numero(1, 3, 0)
 
 while True:
-
-    # =============================================
     # ESPERAR AL BOTÓN 15 PARA INICIAR
-    #
     # El display NO se toca aquí: debe conservar
     # lo último mostrado (ya sea el estado inicial
-    # o el resultado del juego anterior) hasta que
-    # el jugador presione para iniciar una nueva
+    # o el resultado del juego anterior) hasta quempresione para iniciar una nueva
     # partida.
-    # =============================================
-
     esperar_inicio()
 
     # =============================================
@@ -1136,31 +1026,9 @@ while True:
     # =================================================
 
     if reiniciar_juego:
-
-        print("======================")
-        print("JUEGO REINICIADO")
-        print("======================")
-
         apagar_leds()
-
-        # =============================================
         # DISPLAY: RESETEAR A NIVEL 1, VIDAS 3, TIEMPO 0
-        #
-        # A diferencia de GAME OVER / GANASTE, el
-        # reinicio manual sí debe volver al estado
-        # inicial, no conservar los últimos valores.
-        # =============================================
-
         actualizar_numero(1, 3, 0)
-
-        # ---------------------------------------------
-        # El while True vuelve a llamar:
-        #
-        # esperar_inicio()
-        #
-        # Por lo tanto el juego queda detenido
-        # hasta una NUEVA pulsación corta.
-        # ---------------------------------------------
 
     # =================================================
     # GANÓ
@@ -1188,12 +1056,6 @@ while True:
     # =================================================
 
     else:
-
-        print("======================")
-        print("GAME OVER")
-        print("======================")
-
-        print("Tiempo acumulado final:", tiempo_acumulado)
 
         apagar_leds()
 

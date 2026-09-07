@@ -924,12 +924,6 @@ while True:
             # -------------------------------------
 
             apagar_leds()
-            
-            if esperar_tiempo(tiempo):
-
-                reiniciar_juego = True
-
-                break
 
             # -------------------------------------
             # Esperar mientras se vigila botón 15

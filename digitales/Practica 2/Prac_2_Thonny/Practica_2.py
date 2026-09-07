@@ -207,6 +207,7 @@ def actualizar_numero(n_nivel, n_vidas, n_tiempo):
     entero = int(n_tiempo)
 
     decimal = int(round((n_tiempo - entero) * 10))#me da la parte decimal.
+    
 
     if decimal >= 10:
 
@@ -221,7 +222,7 @@ def actualizar_numero(n_nivel, n_vidas, n_tiempo):
     numero[0] = n_nivel if 0 <= n_nivel <= 9 else 9
     numero[1] = n_vidas if 0 <= n_vidas <= 3 else 3
     numero[2] = entero
-    numero[3] = decimal
+    numero[3] = decimal 
 
 
 # =================================================
@@ -609,8 +610,9 @@ def esperar_con_parpadeo(tiempo_total, nivel, vidas_actuales):
     #para poder apagarlo automáticamente pasados 350 ms sin perder el rastro de otros LEDs encendidos simultáneamente
     # =============================================
     # BUCLE PRINCIPAL
-    while time.ticks_diff(time.ticks_ms(),inicio) < tiempo_total * 1000: #el 1000 es para convertir de s a ms
-
+    
+    
+    while time.ticks_diff(time.ticks_ms(),inicio) < (tiempo_total * 1000): #el 1000 es para convertir de s a ms
         ahora = time.ticks_ms()
         multiplexar()
         # =========================================
@@ -834,7 +836,7 @@ while True:
     # (nueva partida = nuevo conteo)
     # =============================================
 
-    tiempo_acumulado = 0
+    tiempo_acumulado = 0.00
 
     # =============================================
     # COMENZAR NIVEL 1
@@ -892,7 +894,7 @@ while True:
         # =========================================
         # TIEMPO DE RESPUESTA
         # =========================================
-
+        
         time_resp = 1.25 * (2 * tiempo * nivel)
 
         # =========================================
@@ -922,6 +924,12 @@ while True:
             # -------------------------------------
 
             apagar_leds()
+            
+            if esperar_tiempo(tiempo):
+
+                reiniciar_juego = True
+
+                break
 
             # -------------------------------------
             # Esperar mientras se vigila botón 15

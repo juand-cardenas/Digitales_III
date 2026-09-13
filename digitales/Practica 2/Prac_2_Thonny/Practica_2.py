@@ -35,10 +35,10 @@ botones = [
 
 # Segmentos (a, b, c, d, e, f, g), se configura los pines de salida para el 7 segemnto
 #unsado un for que va desde 6 a 13
-seg = [Pin(i, Pin.OUT) for i in range(6, 13)]
+seg = [Pin(i, Pin.OUT) for i in range(5, 12)]
 
 # Son los que uso para encender el bloque de los segementos.
-dig = [ Pin(13, Pin.OUT), Pin(14, Pin.OUT), Pin(15, Pin.OUT), Pin(21, Pin.OUT)
+dig = [ Pin(12, Pin.OUT), Pin(13, Pin.OUT), Pin(14, Pin.OUT), Pin(15, Pin.OUT)
 ]
 
 # Tabla (diccionario) de acceso rapido, para saber que leds de los 7 enciendo para cada numero

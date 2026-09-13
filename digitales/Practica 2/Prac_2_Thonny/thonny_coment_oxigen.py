@@ -46,11 +46,11 @@ botones = [
 # =================================================
 
 ## @brief Pines de los 7 segmentos (a, b, c, d, e, f, g).
-seg = [Pin(i, Pin.OUT) for i in range(6, 13)]
+seg = [Pin(i, Pin.OUT) for i in range(5, 12)]
 
 ## @brief Pines que habilitan cada uno de los 4 dígitos del display
 ##        (común activo en bajo).
-dig = [Pin(13, Pin.OUT), Pin(14, Pin.OUT), Pin(15, Pin.OUT), Pin(21, Pin.OUT)]
+dig = [Pin(12, Pin.OUT), Pin(13, Pin.OUT), Pin(14, Pin.OUT), Pin(15, Pin.OUT)]
 
 ## @brief Tabla de patrones de segmentos para cada dígito (0-9).
 ##

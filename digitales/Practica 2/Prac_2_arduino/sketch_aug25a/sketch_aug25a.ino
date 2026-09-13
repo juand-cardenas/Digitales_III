@@ -40,14 +40,14 @@
 
 // LEDs (patrón + LED de respuesta)
 // leds[0..3] -> botones 0..3 -> números 0..3
-// leds[4]    -> LED de "respuesta" (pin 20)
+// leds[4]    -> LED de "respuesta" (pin 16)
 const uint8_t PIN_LEDS[5] = {20, 19, 18, 17, 16};
 
 // Botones
-// Botón 0 -> LED 17 -> número 0   (leds[1])
-// Botón 1 -> LED 18 -> número 1   (leds[2])
-// Botón 2 -> LED 19 -> número 2   (leds[3])
-// Botón 3 -> LED 20 -> número 3   (leds[0])  (ver nota abajo)
+// Botón 0 -> LED 20 -> número 0   (leds[1])
+// Botón 1 -> LED 19 -> número 1   (leds[2])
+// Botón 2 -> LED 18 -> número 2   (leds[3])
+// Botón 3 -> LED 17 -> número 3   (leds[0])  (ver nota abajo)
 // Botón 4 -> INICIO / REINICIO
 //
 // NOTA: se conserva exactamente la misma
@@ -58,10 +58,10 @@ const uint8_t PIN_LEDS[5] = {20, 19, 18, 17, 16};
 const uint8_t PIN_BOTONES[5] = {0, 1, 2, 3, 4};
 
 // Display de 7 segmentos: segmentos (a,b,c,d,e,f,g)
-const uint8_t PIN_SEG[7] = {6, 7, 8, 9, 10, 11, 12};
+const uint8_t PIN_SEG[7] = {5,6, 7, 8, 9, 10, 11};
 
 // Display de 7 segmentos: dígitos (común de cada display)
-const uint8_t PIN_DIG[4] = {13, 14, 15, 21};
+const uint8_t PIN_DIG[4] = {12, 13, 14, 15};
 
 // Tabla de patrones para cada número 0-9
 // (10 = dígito en blanco, todos los segmentos apagados)
@@ -701,6 +701,8 @@ void loop() {
             }
 
             apagarLeds();
+
+            
 
             // Pausa entre un LED y el siguiente. NO se
             // aplica tras el ÚLTIMO LED, para que la

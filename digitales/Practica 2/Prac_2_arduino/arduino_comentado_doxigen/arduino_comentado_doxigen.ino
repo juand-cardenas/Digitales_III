@@ -56,10 +56,10 @@ const uint8_t PIN_LEDS[5] = {20, 19, 18, 17, 16};
 const uint8_t PIN_BOTONES[5] = {0, 1, 2, 3, 4};
 
 /** @brief Pines de los segmentos (a, b, c, d, e, f, g) del display de 7 segmentos. */
-const uint8_t PIN_SEG[7] = {6, 7, 8, 9, 10, 11, 12};
+const uint8_t PIN_SEG[7] = {5,6, 7, 8, 9, 10, 11};
 
 /** @brief Pines de los dígitos (común de cada display) del display de 7 segmentos. */
-const uint8_t PIN_DIG[4] = {13, 14, 15, 21};
+const uint8_t PIN_DIG[4] = {12, 13, 14, 15};
 
 /**
  * @brief Tabla de patrones de segmentos para cada número del 0 al 9.

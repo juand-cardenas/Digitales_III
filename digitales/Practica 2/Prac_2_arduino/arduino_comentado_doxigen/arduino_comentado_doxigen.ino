@@ -264,7 +264,7 @@ void actualizarNumero(int nNivel, int nVidas, float nTiempo) {
     if (entero > 9) entero = 9;
 
     numero[0] = (nNivel >= 0 && nNivel <= 9) ? nNivel : 9;
-    numero[1] = (nVidas >= 0 && nVidas <= 9) ? nVidas : 9;
+    numero[1] = (nVidas >= 0 && nVidas <= 3) ? nVidas : 3;
     numero[2] = entero;
     numero[3] = decimal;
 }

@@ -1,0 +1,1034 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=11"/>
+<meta name="generator" content="Doxygen 1.18.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Arduino: Referencia del archivo C:/Users/jdcar/Downloads/digitales/Practica 2/Prac_2_arduino/arduino_comentado_doxigen/arduino_comentado_doxigen.ino</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="codefolding.js"></script>
+<script type="text/javascript" src="clipboard.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript" src="cookie.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr id="projectrow">
+  <td id="projectalign">
+   <div id="projectname">Arduino<span id="projectnumber">&#160;final</span>
+   </div>
+   <div id="projectbrief">es la version en el ide arduino del juego</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- Generado por Doxygen 1.18.0 -->
+<script type="text/javascript">
+let searchBox = new SearchBox("searchBox", "search/",'.html');
+</script>
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', codefold.init);
+</script>
+<script type="application/json" id="doxygen-config">
+{
+  "relPath": "",
+  "generateTreeView": true,
+  "searchEngine": true,
+  "serverBasedSearch": false,
+  "disableIndex": false,
+  "dynamicMenus": true,
+  "fullSidebar": false
+}
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<div id="main-nav-mobile">
+<div class="sm sm-dox"><input id="main-menu-state" type="checkbox"/>
+<label class="main-menu-btn" for="main-menu-state">
+<span class="main-menu-btn-icon"></span> Toggle main menu visibility</label>
+<span id="searchBoxPos1"></span>
+</div>
+</div><!-- main-nav-mobile -->
+<div id="main-nav">
+  <ul class="sm sm-dox" id="main-menu">
+    <li id="searchBoxPos2">
+        <div id="MSearchBox" class="MSearchBoxInactive">
+        <span class="left">
+          <span id="MSearchSelect" class="search-icon"><span class="search-icon-dropdown"></span></span>
+          <input type="text" id="MSearchField" value="" placeholder="Buscar" accesskey="S"/>
+          </span><span class="right">
+            <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
+          </span>
+        </div>
+    </li>
+  </ul>
+</div><!-- main-nav -->
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded',() => { initNavTree('arduino__comentado__doxigen_8ino.html','',''); });
+</script>
+<div id="container">
+<div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">Cargando...</div>
+<div class="SRStatus" id="Searching">Buscando...</div>
+<div class="SRStatus" id="NoMatches">Nada coincide</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="header">
+  <div class="headertitle"><div class="title">Referencia del archivo arduino_comentado_doxigen.ino</div></div>
+</div><!--header-->
+<div class="contents">
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-enum-members" class="groupheader"><a id="enum-members" name="enum-members"></a>
+Enumeraciones</h2></td></tr>
+<tr class="memitem:a655aae546d3ee87f33a09812fd739772" id="r_a655aae546d3ee87f33a09812fd739772"><td class="memItemLeft">enum &#160;</td><td class="memItemRight"><a class="el" href="#a655aae546d3ee87f33a09812fd739772">ResultadoNivel</a> { <a class="el" href="#a655aae546d3ee87f33a09812fd739772a036aa3b53e0311f7706bfea3e566d0fe">REINICIO_SOLICITADO</a> = -1
+, <a class="el" href="#a655aae546d3ee87f33a09812fd739772a3e7064e0912475e41b743792a2a7d284">NIVEL_ERROR</a> = 0
+, <a class="el" href="#a655aae546d3ee87f33a09812fd739772a437a30f3157f886236c669eb2e6145c2">NIVEL_OK</a> = 1
+ }</td></tr>
+<tr class="memdesc:a655aae546d3ee87f33a09812fd739772"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resultados posibles de <a class="el" href="#a59f30b3d0c36a4c9541ac70bef842e94" title="Espera la respuesta del jugador durante la fase de entrada de un nivel.">esperarConParpadeo()</a>.  <a href="#a655aae546d3ee87f33a09812fd739772">Más...</a><br /></td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
+Funciones</h2></td></tr>
+<tr class="memitem:ac90c22745d9d44e5c2a23f07002366b4" id="r_ac90c22745d9d44e5c2a23f07002366b4"><td class="memItemLeft">unsigned long&#160;</td><td class="memItemRight"><a class="el" href="#ac90c22745d9d44e5c2a23f07002366b4">diffMs</a> (unsigned long ahora, unsigned long antes)</td></tr>
+<tr class="memdesc:ac90c22745d9d44e5c2a23f07002366b4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calcula la diferencia entre dos marcas de tiempo en milisegundos.  <br /></td></tr>
+<tr class="memitem:ae1c1ec69d04d5d90d127dd81cad29d8d" id="r_ae1c1ec69d04d5d90d127dd81cad29d8d"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ae1c1ec69d04d5d90d127dd81cad29d8d">apagarLeds</a> ()</td></tr>
+<tr class="memdesc:ae1c1ec69d04d5d90d127dd81cad29d8d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apaga todos los LEDs del juego (incluido el LED de respuesta).  <br /></td></tr>
+<tr class="memitem:adee874cd342bb2864c8dc4176574e7aa" id="r_adee874cd342bb2864c8dc4176574e7aa"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#adee874cd342bb2864c8dc4176574e7aa">apagarDigitos</a> ()</td></tr>
+<tr class="memdesc:adee874cd342bb2864c8dc4176574e7aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apaga (deshabilita) los cuatro dÃ­gitos del display de 7 segmentos.  <br /></td></tr>
+<tr class="memitem:a33efab4dafbc27b2de1887d479f2a4c3" id="r_a33efab4dafbc27b2de1887d479f2a4c3"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a33efab4dafbc27b2de1887d479f2a4c3">escribirSegmentos</a> (int n)</td></tr>
+<tr class="memdesc:a33efab4dafbc27b2de1887d479f2a4c3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Activa en los pines de segmentos el patrÃ³n correspondiente a un nÃºmero.  <br /></td></tr>
+<tr class="memitem:adfc5c2fcaa4e2985d71314dbc10f8009" id="r_adfc5c2fcaa4e2985d71314dbc10f8009"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#adfc5c2fcaa4e2985d71314dbc10f8009">multiplexar</a> ()</td></tr>
+<tr class="memdesc:adfc5c2fcaa4e2985d71314dbc10f8009"><td class="mdescLeft">&#160;</td><td class="mdescRight">Multiplexa el display de 7 segmentos de forma continua.  <br /></td></tr>
+<tr class="memitem:ab0f4ee80a3d068e9a56717c7ccd52b3d" id="r_ab0f4ee80a3d068e9a56717c7ccd52b3d"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ab0f4ee80a3d068e9a56717c7ccd52b3d">actualizarNumero</a> (int nNivel, int nVidas, float n_tiempo)</td></tr>
+<tr class="memdesc:ab0f4ee80a3d068e9a56717c7ccd52b3d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Actualiza los valores mostrados en el display de 7 segmentos.  <br /></td></tr>
+<tr class="memitem:a3ab3deda460e216b6dea9119aad86332" id="r_a3ab3deda460e216b6dea9119aad86332"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a3ab3deda460e216b6dea9119aad86332">esperarMsConDisplay</a> (unsigned long ms)</td></tr>
+<tr class="memdesc:a3ab3deda460e216b6dea9119aad86332"><td class="mdescLeft">&#160;</td><td class="mdescRight">Espera una cantidad de milisegundos sin bloquear el display.  <br /></td></tr>
+<tr class="memitem:aeb5b0184bb7a19737d8bfb5d32aabd37" id="r_aeb5b0184bb7a19737d8bfb5d32aabd37"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#aeb5b0184bb7a19737d8bfb5d32aabd37">animacionNivelSuperado</a> ()</td></tr>
+<tr class="memdesc:aeb5b0184bb7a19737d8bfb5d32aabd37"><td class="mdescLeft">&#160;</td><td class="mdescRight">AnimaciÃ³n de nivel superado.  <br /></td></tr>
+<tr class="memitem:a699655e237387cdf1d0000d0e76af9a7" id="r_a699655e237387cdf1d0000d0e76af9a7"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a699655e237387cdf1d0000d0e76af9a7">animacionEntradaIncorrecta</a> ()</td></tr>
+<tr class="memdesc:a699655e237387cdf1d0000d0e76af9a7"><td class="mdescLeft">&#160;</td><td class="mdescRight">AnimaciÃ³n de entrada incorrecta.  <br /></td></tr>
+<tr class="memitem:aa1c0e4e2a39ff9f0fc35b43b608d58bd" id="r_aa1c0e4e2a39ff9f0fc35b43b608d58bd"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#aa1c0e4e2a39ff9f0fc35b43b608d58bd">animacionAgotamientoTiempo</a> ()</td></tr>
+<tr class="memdesc:aa1c0e4e2a39ff9f0fc35b43b608d58bd"><td class="mdescLeft">&#160;</td><td class="mdescRight">AnimaciÃ³n de agotamiento del tiempo de respuesta.  <br /></td></tr>
+<tr class="memitem:a3bff350b593a7b3bf025d0f43d461833" id="r_a3bff350b593a7b3bf025d0f43d461833"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a3bff350b593a7b3bf025d0f43d461833">animacionPerdidaVida</a> (uint8_t veces=3, unsigned long duracionMs=150)</td></tr>
+<tr class="memdesc:a3bff350b593a7b3bf025d0f43d461833"><td class="mdescLeft">&#160;</td><td class="mdescRight">AnimaciÃ³n de pÃ©rdida de vida.  <br /></td></tr>
+<tr class="memitem:aac08b846ed4feb23e632e373d73fa925" id="r_aac08b846ed4feb23e632e373d73fa925"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#aac08b846ed4feb23e632e373d73fa925">animacionVictoria</a> ()</td></tr>
+<tr class="memdesc:aac08b846ed4feb23e632e373d73fa925"><td class="mdescLeft">&#160;</td><td class="mdescRight">AnimaciÃ³n de finalizaciÃ³n exitosa (partida ganada).  <br /></td></tr>
+<tr class="memitem:a1861f3ea2230c773681ba906634e0463" id="r_a1861f3ea2230c773681ba906634e0463"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a1861f3ea2230c773681ba906634e0463">acumularTiempo</a> (float segundos)</td></tr>
+<tr class="memdesc:a1861f3ea2230c773681ba906634e0463"><td class="mdescLeft">&#160;</td><td class="mdescRight">Suma un intervalo de tiempo al acumulador global de tiempo de respuesta.  <br /></td></tr>
+<tr class="memitem:a9c9377541a32834fec9828334552d0ed" id="r_a9c9377541a32834fec9828334552d0ed"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a9c9377541a32834fec9828334552d0ed">revisarBotonReinicio</a> ()</td></tr>
+<tr class="memdesc:a9c9377541a32834fec9828334552d0ed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Revisa el estado del botÃ³n de reinicio (botÃ³n 4).  <br /></td></tr>
+<tr class="memitem:a47cb8032d30fb05a18a642d34406475f" id="r_a47cb8032d30fb05a18a642d34406475f"><td class="memItemLeft">bool&#160;</td><td class="memItemRight"><a class="el" href="#a47cb8032d30fb05a18a642d34406475f">esperarTiempo</a> (float tiempoTotalSeg)</td></tr>
+<tr class="memdesc:a47cb8032d30fb05a18a642d34406475f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Espera un tiempo determinado, revisando continuamente el botÃ³n de reinicio.  <br /></td></tr>
+<tr class="memitem:a5195e953b45d813d119b7bdff191962b" id="r_a5195e953b45d813d119b7bdff191962b"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a5195e953b45d813d119b7bdff191962b">esperarInicio</a> ()</td></tr>
+<tr class="memdesc:a5195e953b45d813d119b7bdff191962b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Espera a que el jugador inicie una nueva partida.  <br /></td></tr>
+<tr class="memitem:a59f30b3d0c36a4c9541ac70bef842e94" id="r_a59f30b3d0c36a4c9541ac70bef842e94"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#a59f30b3d0c36a4c9541ac70bef842e94">esperarConParpadeo</a> (float tiempoTotalSeg, int nivel, int vidasActuales)</td></tr>
+<tr class="memdesc:a59f30b3d0c36a4c9541ac70bef842e94"><td class="mdescLeft">&#160;</td><td class="mdescRight">Espera la respuesta del jugador durante la fase de entrada de un nivel.  <br /></td></tr>
+<tr class="memitem:a4fc01d736fe50cf5b977f755b675f11d" id="r_a4fc01d736fe50cf5b977f755b675f11d"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a4fc01d736fe50cf5b977f755b675f11d">setup</a> ()</td></tr>
+<tr class="memdesc:a4fc01d736fe50cf5b977f755b675f11d"><td class="mdescLeft">&#160;</td><td class="mdescRight">InicializaciÃ³n del nÃºcleo 0.  <br /></td></tr>
+<tr class="memitem:afe461d27b9c48d5921c00d521181f12f" id="r_afe461d27b9c48d5921c00d521181f12f"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#afe461d27b9c48d5921c00d521181f12f">loop</a> ()</td></tr>
+<tr class="memdesc:afe461d27b9c48d5921c00d521181f12f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bucle principal del juego, ejecutado en el nÃºcleo 0.  <br /></td></tr>
+<tr class="memitem:ac764ee28e2916a7de10b22927e02d1a4" id="r_ac764ee28e2916a7de10b22927e02d1a4"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#ac764ee28e2916a7de10b22927e02d1a4">setup1</a> ()</td></tr>
+<tr class="memdesc:ac764ee28e2916a7de10b22927e02d1a4"><td class="mdescLeft">&#160;</td><td class="mdescRight">InicializaciÃ³n del nÃºcleo 1.  <br /></td></tr>
+<tr class="memitem:a39ceba300a80e348e278539f57e0ca79" id="r_a39ceba300a80e348e278539f57e0ca79"><td class="memItemLeft">void&#160;</td><td class="memItemRight"><a class="el" href="#a39ceba300a80e348e278539f57e0ca79">loop1</a> ()</td></tr>
+<tr class="memdesc:a39ceba300a80e348e278539f57e0ca79"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bucle del nÃºcleo 1: multiplexa continuamente el display de 7 segmentos.  <br /></td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-var-members" class="groupheader"><a id="var-members" name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:a9227daf8914570a842b84e45c54a5082" id="r_a9227daf8914570a842b84e45c54a5082"><td class="memItemLeft">volatile int&#160;</td><td class="memItemRight"><a class="el" href="#a9227daf8914570a842b84e45c54a5082">numero</a> [4] = {0, 0, 0, 0}</td></tr>
+<tr class="memdesc:a9227daf8914570a842b84e45c54a5082"><td class="mdescLeft">&#160;</td><td class="mdescRight">Valores mostrados actualmente en el display de 7 segmentos.  <br /></td></tr>
+<tr class="memitem:a487319e7086e6b6fa3b0394a89532aa9" id="r_a487319e7086e6b6fa3b0394a89532aa9"><td class="memItemLeft">const unsigned long&#160;</td><td class="memItemRight"><a class="el" href="#a487319e7086e6b6fa3b0394a89532aa9">INTERVALO_DISPLAY_MS</a> = 2</td></tr>
+<tr class="memdesc:a487319e7086e6b6fa3b0394a89532aa9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tiempo (en ms) que permanece encendido cada dÃ­gito durante el multiplexado.  <br /></td></tr>
+<tr class="memitem:ab3a12aeec42c5e1ab5ead82fb3189bd4" id="r_ab3a12aeec42c5e1ab5ead82fb3189bd4"><td class="memItemLeft">const unsigned long&#160;</td><td class="memItemRight"><a class="el" href="#ab3a12aeec42c5e1ab5ead82fb3189bd4">TIEMPO_REINICIO_MS</a> = 2000</td></tr>
+<tr class="memdesc:ab3a12aeec42c5e1ab5ead82fb3189bd4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tiempo (en ms) de pulsaciÃ³n larga del botÃ³n 4 necesario para solicitar un reinicio.  <br /></td></tr>
+<tr class="memitem:a360e8b46766716a87c97ccb45057f093" id="r_a360e8b46766716a87c97ccb45057f093"><td class="memItemLeft">const float&#160;</td><td class="memItemRight"><a class="el" href="#a360e8b46766716a87c97ccb45057f093">TIEMPO_ACUMULADO_MAX</a> = 99f</td></tr>
+<tr class="memdesc:a360e8b46766716a87c97ccb45057f093"><td class="mdescLeft">&#160;</td><td class="mdescRight">LÃ­mite mÃ¡ximo del tiempo acumulado de respuesta, mostrado en el display.  <br /></td></tr>
+<tr id="var-members-0" class="groupHeader"><td colspan="2"><div class="groupHeader">ConfiguraciÃ³n de pines</div></td></tr>
+<tr class="memitem:a54c282f6923854565b174199becdd014" id="r_a54c282f6923854565b174199becdd014"><td class="memItemLeft">const uint8_t&#160;</td><td class="memItemRight"><a class="el" href="#a54c282f6923854565b174199becdd014">PIN_LEDS</a> [5] = {20, 19, 18, 17, 16}</td></tr>
+<tr class="memdesc:a54c282f6923854565b174199becdd014"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pines de los LEDs del juego.  <br /></td></tr>
+<tr class="memitem:a74bb19ccf74bc54e08fe773513919936" id="r_a74bb19ccf74bc54e08fe773513919936"><td class="memItemLeft">const uint8_t&#160;</td><td class="memItemRight"><a class="el" href="#a74bb19ccf74bc54e08fe773513919936">PIN_BOTONES</a> [5] = {0, 1, 2, 3, 4}</td></tr>
+<tr class="memdesc:a74bb19ccf74bc54e08fe773513919936"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pines de los botones del juego.  <br /></td></tr>
+<tr class="memitem:accecb89f204e3023b848a24ea6c01f5e" id="r_accecb89f204e3023b848a24ea6c01f5e"><td class="memItemLeft">const uint8_t&#160;</td><td class="memItemRight"><a class="el" href="#accecb89f204e3023b848a24ea6c01f5e">PIN_SEG</a> [7] = {5,6, 7, 8, 9, 10, 11}</td></tr>
+<tr class="memdesc:accecb89f204e3023b848a24ea6c01f5e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pines de los segmentos (a, b, c, d, e, f, g) del display de 7 segmentos.  <br /></td></tr>
+<tr class="memitem:a7899b0f7b4a8716bc5344cbf64efd0c2" id="r_a7899b0f7b4a8716bc5344cbf64efd0c2"><td class="memItemLeft">const uint8_t&#160;</td><td class="memItemRight"><a class="el" href="#a7899b0f7b4a8716bc5344cbf64efd0c2">PIN_DIG</a> [4] = {12, 13, 14, 15}</td></tr>
+<tr class="memdesc:a7899b0f7b4a8716bc5344cbf64efd0c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pines de los dÃ­gitos (comÃºn de cada display) del display de 7 segmentos.  <br /></td></tr>
+<tr class="memitem:ad6631a5c682588052ff2daa4683e4f0b" id="r_ad6631a5c682588052ff2daa4683e4f0b"><td class="memItemLeft">const uint8_t&#160;</td><td class="memItemRight"><a class="el" href="#ad6631a5c682588052ff2daa4683e4f0b">TABLA_7SEG</a> [11][7]</td></tr>
+<tr class="memdesc:ad6631a5c682588052ff2daa4683e4f0b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tabla de patrones de segmentos para cada nÃºmero del 0 al 9.  <br /></td></tr>
+<tr id="var-members-1" class="groupHeader"><td colspan="2"><div class="groupHeader">Variables de estado del juego</div></td></tr>
+<tr><td colspan="2" class="ititle"><div class="groupText"><p>Utilizadas exclusivamente en el nÃºcleo 0. </p>
+</div></td></tr>
+<tr class="memitem:af9af01eec6273a990ce4a876dd731a0b" id="r_af9af01eec6273a990ce4a876dd731a0b"><td class="memItemLeft">float&#160;</td><td class="memItemRight"><a class="el" href="#af9af01eec6273a990ce4a876dd731a0b">tiempo</a> = 0</td></tr>
+<tr class="memdesc:af9af01eec6273a990ce4a876dd731a0b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tiempo (en s) entre LEDs al mostrar la secuencia del nivel actual.  <br /></td></tr>
+<tr class="memitem:ad5398a58fa408652865cfa686889503e" id="r_ad5398a58fa408652865cfa686889503e"><td class="memItemLeft">float&#160;</td><td class="memItemRight"><a class="el" href="#ad5398a58fa408652865cfa686889503e">time_resp</a> = 0</td></tr>
+<tr class="memdesc:ad5398a58fa408652865cfa686889503e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tiempo total (en s) disponible para que el jugador responda el nivel actual.  <br /></td></tr>
+<tr class="memitem:ad742903c7f4c72d558becbaeb67fd3b3" id="r_ad742903c7f4c72d558becbaeb67fd3b3"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#ad742903c7f4c72d558becbaeb67fd3b3">vidas</a> = 3</td></tr>
+<tr class="memdesc:ad742903c7f4c72d558becbaeb67fd3b3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Vidas restantes del jugador en la partida actual.  <br /></td></tr>
+<tr class="memitem:a01faeedff79378df11ab5d73d19d664d" id="r_a01faeedff79378df11ab5d73d19d664d"><td class="memItemLeft">int&#160;</td><td class="memItemRight"><a class="el" href="#a01faeedff79378df11ab5d73d19d664d">lista</a> [10] = {0}</td></tr>
+<tr class="memdesc:a01faeedff79378df11ab5d73d19d664d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Secuencia aleatoria de botones (0-3) generada para la partida actual.  <br /></td></tr>
+<tr class="memitem:ae56b1579152622b9c93a7381c8665470" id="r_ae56b1579152622b9c93a7381c8665470"><td class="memItemLeft">float&#160;</td><td class="memItemRight"><a class="el" href="#ae56b1579152622b9c93a7381c8665470">tiempo_acumulado</a> = 0</td></tr>
+<tr class="memdesc:ae56b1579152622b9c93a7381c8665470"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tiempo acumulado (en s) que el jugador tarda en completar correctamente cada nivel.  <br /></td></tr>
+<tr class="memitem:a9e04a30ca58759833fd2221ee6084371" id="r_a9e04a30ca58759833fd2221ee6084371"><td class="memItemLeft">long&#160;</td><td class="memItemRight"><a class="el" href="#a9e04a30ca58759833fd2221ee6084371">boton4_desde</a> = -1</td></tr>
+<tr class="memdesc:a9e04a30ca58759833fd2221ee6084371"><td class="mdescLeft">&#160;</td><td class="mdescRight">Marca de tiempo (millis()) desde la que se mantiene presionado el botÃ³n de inicio/reinicio (botÃ³n 4).  <br /></td></tr>
+</table>
+<a name="doc-enum-members" id="doc-enum-members"></a><h2 id="header-doc-enum-members" class="groupheader">Documentación de enumeraciones</h2>
+<a id="a655aae546d3ee87f33a09812fd739772" name="a655aae546d3ee87f33a09812fd739772"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a655aae546d3ee87f33a09812fd739772">&#9670;&#160;</a></span>ResultadoNivel</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="#a655aae546d3ee87f33a09812fd739772">ResultadoNivel</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Resultados posibles de <a class="el" href="#a59f30b3d0c36a4c9541ac70bef842e94" title="Espera la respuesta del jugador durante la fase de entrada de un nivel.">esperarConParpadeo()</a>. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Valores de enumeraciones</th></tr><tr><td class="fieldname"><a id="a655aae546d3ee87f33a09812fd739772a036aa3b53e0311f7706bfea3e566d0fe" name="a655aae546d3ee87f33a09812fd739772a036aa3b53e0311f7706bfea3e566d0fe"></a>REINICIO_SOLICITADO&#160;</td><td class="fielddoc"><p>Se solicitÃ³ un reinicio durante la espera. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a655aae546d3ee87f33a09812fd739772a3e7064e0912475e41b743792a2a7d284" name="a655aae546d3ee87f33a09812fd739772a3e7064e0912475e41b743792a2a7d284"></a>NIVEL_ERROR&#160;</td><td class="fielddoc"><p>Respuesta incorrecta o se agotÃ³ el tiempo. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a655aae546d3ee87f33a09812fd739772a437a30f3157f886236c669eb2e6145c2" name="a655aae546d3ee87f33a09812fd739772a437a30f3157f886236c669eb2e6145c2"></a>NIVEL_OK&#160;</td><td class="fielddoc"><p>El jugador completÃ³ el nivel correctamente. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Documentación de funciones</h2>
+<a id="ab0f4ee80a3d068e9a56717c7ccd52b3d" name="ab0f4ee80a3d068e9a56717c7ccd52b3d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab0f4ee80a3d068e9a56717c7ccd52b3d">&#9670;&#160;</a></span>actualizarNumero()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void actualizarNumero </td>
+          <td>(</td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>nNivel</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>nVidas</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>n_tiempo</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Actualiza los valores mostrados en el display de 7 segmentos. </p>
+<p>Escribe en el arreglo compartido <span class="tt"><a class="el" href="#a9227daf8914570a842b84e45c54a5082" title="Valores mostrados actualmente en el display de 7 segmentos.">numero</a></span> (leÃ­do por el nÃºcleo 1) el nivel, las vidas y el tiempo acumulado, separando este Ãºltimo en unidades y dÃ©cimas y aplicando los lÃ­mites de despliegue correspondientes.</p>
+<dl class="params"><dt>Parámetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">nNivel</td><td>Nivel actual a mostrar (0-9; se limita a 9 si se excede). </td></tr>
+    <tr><td class="paramname">nVidas</td><td>Vidas restantes a mostrar (0-3; se limita a 3 si se excede). </td></tr>
+    <tr><td class="paramname">nTiempo</td><td>Tiempo acumulado a mostrar, en segundos (se limita al rango [0, TIEMPO_ACUMULADO_MAX]). </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a1861f3ea2230c773681ba906634e0463" name="a1861f3ea2230c773681ba906634e0463"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1861f3ea2230c773681ba906634e0463">&#9670;&#160;</a></span>acumularTiempo()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void acumularTiempo </td>
+          <td>(</td>
+          <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>segundos</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Suma un intervalo de tiempo al acumulador global de tiempo de respuesta. </p>
+<p>Se invoca sin importar si el intento del jugador fue correcto, incorrecto, o si se agotÃ³ el tiempo, respetando siempre el lÃ­mite TIEMPO_ACUMULADO_MAX.</p>
+<dl class="params"><dt>Parámetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">segundos</td><td>Cantidad de segundos a sumar al acumulador. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="aa1c0e4e2a39ff9f0fc35b43b608d58bd" name="aa1c0e4e2a39ff9f0fc35b43b608d58bd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa1c0e4e2a39ff9f0fc35b43b608d58bd">&#9670;&#160;</a></span>animacionAgotamientoTiempo()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void animacionAgotamientoTiempo </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>AnimaciÃ³n de agotamiento del tiempo de respuesta. </p>
+<p>Mantiene el LED de respuesta (leds[4]) encendido de forma fija, mientras hace parpadear los dÃ­gitos de tiempo (unidades y dÃ©cimas) del display de 7 segmentos. </p>
+
+</div>
+</div>
+<a id="a699655e237387cdf1d0000d0e76af9a7" name="a699655e237387cdf1d0000d0e76af9a7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a699655e237387cdf1d0000d0e76af9a7">&#9670;&#160;</a></span>animacionEntradaIncorrecta()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void animacionEntradaIncorrecta </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>AnimaciÃ³n de entrada incorrecta. </p>
+<p>Enciende simultÃ¡neamente los LEDs 0 a 3 y los hace parpadear dos veces. </p>
+
+</div>
+</div>
+<a id="aeb5b0184bb7a19737d8bfb5d32aabd37" name="aeb5b0184bb7a19737d8bfb5d32aabd37"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeb5b0184bb7a19737d8bfb5d32aabd37">&#9670;&#160;</a></span>animacionNivelSuperado()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void animacionNivelSuperado </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>AnimaciÃ³n de nivel superado. </p>
+<p>Realiza un barrido rÃ¡pido de un solo sentido, encendiendo los LEDs 0 a 3 en secuencia. </p>
+
+</div>
+</div>
+<a id="a3bff350b593a7b3bf025d0f43d461833" name="a3bff350b593a7b3bf025d0f43d461833"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3bff350b593a7b3bf025d0f43d461833">&#9670;&#160;</a></span>animacionPerdidaVida()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void animacionPerdidaVida </td>
+          <td>(</td>
+          <td class="paramtype">uint8_t</td>          <td class="paramname"><span class="paramname"><em>veces</em></span><span class="paramdefsep"> = </span><span class="paramdefval">3</span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned long</td>          <td class="paramname"><span class="paramname"><em>duracionMs</em></span><span class="paramdefsep"> = </span><span class="paramdefval">150</span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>AnimaciÃ³n de pÃ©rdida de vida. </p>
+<p>Hace parpadear Ãºnicamente el dÃ­gito de vidas del display de 7 segmentos, mostrando el valor anterior (antes de restar la vida). Los demÃ¡s dÃ­gitos (nivel y tiempo) siguen mostrÃ¡ndose con normalidad, ya que el nÃºcleo 1 continÃºa multiplexando el display durante toda la animaciÃ³n.</p>
+<dl class="params"><dt>Parámetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">veces</td><td>NÃºmero de parpadeos a realizar (por defecto 3). </td></tr>
+    <tr><td class="paramname">duracionMs</td><td>DuraciÃ³n en milisegundos de cada fase del parpadeo (por defecto 150). </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="aac08b846ed4feb23e632e373d73fa925" name="aac08b846ed4feb23e632e373d73fa925"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aac08b846ed4feb23e632e373d73fa925">&#9670;&#160;</a></span>animacionVictoria()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void animacionVictoria </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>AnimaciÃ³n de finalizaciÃ³n exitosa (partida ganada). </p>
+<p>Realiza un barrido de ida y vuelta en dos repeticiones, seguido de tres destellos con los cuatro LEDs encendidos simultÃ¡neamente. </p>
+
+</div>
+</div>
+<a id="adee874cd342bb2864c8dc4176574e7aa" name="adee874cd342bb2864c8dc4176574e7aa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adee874cd342bb2864c8dc4176574e7aa">&#9670;&#160;</a></span>apagarDigitos()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void apagarDigitos </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Apaga (deshabilita) los cuatro dÃ­gitos del display de 7 segmentos. </p>
+<p>Se ejecuta en el nÃºcleo 1, como parte del ciclo de multiplexado. </p>
+
+</div>
+</div>
+<a id="ae1c1ec69d04d5d90d127dd81cad29d8d" name="ae1c1ec69d04d5d90d127dd81cad29d8d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae1c1ec69d04d5d90d127dd81cad29d8d">&#9670;&#160;</a></span>apagarLeds()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void apagarLeds </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Apaga todos los LEDs del juego (incluido el LED de respuesta). </p>
+<p>Se ejecuta en el nÃºcleo 0. </p>
+
+</div>
+</div>
+<a id="ac90c22745d9d44e5c2a23f07002366b4" name="ac90c22745d9d44e5c2a23f07002366b4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac90c22745d9d44e5c2a23f07002366b4">&#9670;&#160;</a></span>diffMs()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">unsigned long diffMs </td>
+          <td>(</td>
+          <td class="paramtype">unsigned long</td>          <td class="paramname"><span class="paramname"><em>ahora</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned long</td>          <td class="paramname"><span class="paramname"><em>antes</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Calcula la diferencia entre dos marcas de tiempo en milisegundos. </p>
+<p>Equivalente a time.ticks_diff() de MicroPython. La resta de dos valores <span class="tt">unsigned long</span> funciona correctamente incluso si millis() da la vuelta (overflow), por lo que no se requiere ningÃºn manejo especial.</p>
+<dl class="params"><dt>Parámetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ahora</td><td>Marca de tiempo actual, en ms. </td></tr>
+    <tr><td class="paramname">antes</td><td>Marca de tiempo anterior, en ms. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Devuelve</dt><dd>Diferencia en milisegundos entre ambas marcas. </dd></dl>
+
+</div>
+</div>
+<a id="a33efab4dafbc27b2de1887d479f2a4c3" name="a33efab4dafbc27b2de1887d479f2a4c3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a33efab4dafbc27b2de1887d479f2a4c3">&#9670;&#160;</a></span>escribirSegmentos()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void escribirSegmentos </td>
+          <td>(</td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>n</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Activa en los pines de segmentos el patrÃ³n correspondiente a un nÃºmero. </p>
+<p>Se ejecuta en el nÃºcleo 1.</p>
+<dl class="params"><dt>Parámetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">n</td><td>NÃºmero a representar (0-9), o 10 para un dÃ­gito en blanco. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a59f30b3d0c36a4c9541ac70bef842e94" name="a59f30b3d0c36a4c9541ac70bef842e94"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a59f30b3d0c36a4c9541ac70bef842e94">&#9670;&#160;</a></span>esperarConParpadeo()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int esperarConParpadeo </td>
+          <td>(</td>
+          <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>tiempoTotalSeg</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>nivel</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int</td>          <td class="paramname"><span class="paramname"><em>vidasActuales</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Espera la respuesta del jugador durante la fase de entrada de un nivel. </p>
+<p>Hace parpadear el LED de respuesta a una frecuencia que aumenta conforme avanza el tiempo disponible, y va leyendo las pulsaciones de los botones 0-3, comparÃ¡ndolas contra la secuencia objetivo (<span class="tt"><a class="el" href="#a01faeedff79378df11ab5d73d19d664d" title="Secuencia aleatoria de botones (0-3) generada para la partida actual.">lista</a></span>). TambiÃ©n revisa continuamente el botÃ³n de reinicio.</p>
+<dl class="params"><dt>Parámetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">tiempoTotalSeg</td><td>Tiempo total disponible para responder, en segundos. </td></tr>
+    <tr><td class="paramname">nivel</td><td>Nivel actual (longitud de la secuencia a repetir). </td></tr>
+    <tr><td class="paramname">vidasActuales</td><td>Vidas restantes del jugador, usadas para actualizar el display.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Devuelve</dt><dd><ul>
+<li>NIVEL_ERROR si la respuesta fue incorrecta o se agotÃ³ el tiempo.</li>
+<li>NIVEL_OK si el jugador completÃ³ correctamente la secuencia del nivel.</li>
+<li>REINICIO_SOLICITADO si se solicitÃ³ un reinicio durante la espera. </li>
+</ul>
+</dd></dl>
+
+</div>
+</div>
+<a id="a5195e953b45d813d119b7bdff191962b" name="a5195e953b45d813d119b7bdff191962b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5195e953b45d813d119b7bdff191962b">&#9670;&#160;</a></span>esperarInicio()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void esperarInicio </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Espera a que el jugador inicie una nueva partida. </p>
+<p>Una pulsaciÃ³n corta del botÃ³n 4 inicia el juego; una pulsaciÃ³n larga (&gt;= TIEMPO_REINICIO_MS) no lo inicia y vuelve a esperar una nueva pulsaciÃ³n. Si al entrar el botÃ³n ya estÃ¡ presionado (por ejemplo, justo despuÃ©s de un reinicio), primero se obliga a soltarlo antes de aceptar nuevas pulsaciones.</p>
+<p>Esta funciÃ³n bloquea hasta que se detecta una pulsaciÃ³n corta vÃ¡lida. </p>
+
+</div>
+</div>
+<a id="a3ab3deda460e216b6dea9119aad86332" name="a3ab3deda460e216b6dea9119aad86332"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3ab3deda460e216b6dea9119aad86332">&#9670;&#160;</a></span>esperarMsConDisplay()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void esperarMsConDisplay </td>
+          <td>(</td>
+          <td class="paramtype">unsigned long</td>          <td class="paramname"><span class="paramname"><em>ms</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Espera una cantidad de milisegundos sin bloquear el display. </p>
+<p>En la versiÃ³n en MicroPython, esta funciÃ³n tambiÃ©n invocaba la rutina de multiplexado para no congelar el display. En esta versiÃ³n el display se refresca de forma independiente en el nÃºcleo 1, por lo que basta con un delay() convencional.</p>
+<dl class="params"><dt>Parámetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ms</td><td>Milisegundos a esperar. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a47cb8032d30fb05a18a642d34406475f" name="a47cb8032d30fb05a18a642d34406475f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a47cb8032d30fb05a18a642d34406475f">&#9670;&#160;</a></span>esperarTiempo()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool esperarTiempo </td>
+          <td>(</td>
+          <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>tiempoTotalSeg</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Espera un tiempo determinado, revisando continuamente el botÃ³n de reinicio. </p>
+<dl class="params"><dt>Parámetros</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">tiempoTotalSeg</td><td>Tiempo total a esperar, en segundos. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Devuelve</dt><dd><span class="tt">true</span> si durante la espera se solicitÃ³ un reinicio, <span class="tt">false</span> en caso contrario. </dd></dl>
+
+</div>
+</div>
+<a id="afe461d27b9c48d5921c00d521181f12f" name="afe461d27b9c48d5921c00d521181f12f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afe461d27b9c48d5921c00d521181f12f">&#9670;&#160;</a></span>loop()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void loop </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Bucle principal del juego, ejecutado en el nÃºcleo 0. </p>
+<p>Cada iteraciÃ³n representa una partida completa: espera el inicio, genera una secuencia aleatoria, recorre los niveles mostrando la secuencia y evaluando la respuesta del jugador, y finalmente gestiona el desenlace de la partida (reinicio manual, victoria o game over). </p>
+
+</div>
+</div>
+<a id="a39ceba300a80e348e278539f57e0ca79" name="a39ceba300a80e348e278539f57e0ca79"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a39ceba300a80e348e278539f57e0ca79">&#9670;&#160;</a></span>loop1()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void loop1 </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Bucle del nÃºcleo 1: multiplexa continuamente el display de 7 segmentos. </p>
+<p>Es el Ãºnico responsable del refresco del display; se ejecuta de forma totalmente independiente de la lÃ³gica del juego en el nÃºcleo 0. </p>
+
+</div>
+</div>
+<a id="adfc5c2fcaa4e2985d71314dbc10f8009" name="adfc5c2fcaa4e2985d71314dbc10f8009"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adfc5c2fcaa4e2985d71314dbc10f8009">&#9670;&#160;</a></span>multiplexar()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void multiplexar </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Multiplexa el display de 7 segmentos de forma continua. </p>
+<p>Debe llamarse repetidamente desde <a class="el" href="#a39ceba300a80e348e278539f57e0ca79" title="Bucle del nÃºcleo 1: multiplexa continuamente el display de 7 segmentos.">loop1()</a> (nÃºcleo 1). En cada invocaciÃ³n, si transcurriÃ³ al menos INTERVALO_DISPLAY_MS desde el Ãºltimo cambio, apaga todos los dÃ­gitos, escribe los segmentos del dÃ­gito actual (numero[posicionDisplay]) y lo enciende, avanzando de forma cÃ­clica al siguiente dÃ­gito.</p>
+<dl class="section note"><dt>Nota</dt><dd>Al ejecutarse en bucle continuo dentro de <a class="el" href="#a39ceba300a80e348e278539f57e0ca79" title="Bucle del nÃºcleo 1: multiplexa continuamente el display de 7 segmentos.">loop1()</a>, no es necesario invocarla manualmente desde el resto del cÃ³digo, a diferencia de la versiÃ³n original en MicroPython. </dd></dl>
+
+</div>
+</div>
+<a id="a9c9377541a32834fec9828334552d0ed" name="a9c9377541a32834fec9828334552d0ed"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9c9377541a32834fec9828334552d0ed">&#9670;&#160;</a></span>revisarBotonReinicio()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool revisarBotonReinicio </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Revisa el estado del botÃ³n de reinicio (botÃ³n 4). </p>
+<p>Debe llamarse de forma continua durante todo el juego. Si el botÃ³n permanece presionado durante al menos TIEMPO_REINICIO_MS, se considera solicitado un reinicio: se apagan los LEDs, se espera a que el usuario suelte el botÃ³n (para evitar reinicios en cadena) y se retorna <span class="tt">true</span>.</p>
+<dl class="section note"><dt>Nota</dt><dd>No invoca <a class="el" href="#adfc5c2fcaa4e2985d71314dbc10f8009" title="Multiplexa el display de 7 segmentos de forma continua.">multiplexar()</a>: el refresco del display lo realiza de forma autÃ³noma el nÃºcleo 1.</dd></dl>
+<dl class="section return"><dt>Devuelve</dt><dd><span class="tt">true</span> si se solicitÃ³ un reinicio, <span class="tt">false</span> en caso contrario. </dd></dl>
+
+</div>
+</div>
+<a id="a4fc01d736fe50cf5b977f755b675f11d" name="a4fc01d736fe50cf5b977f755b675f11d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4fc01d736fe50cf5b977f755b675f11d">&#9670;&#160;</a></span>setup()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void setup </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>InicializaciÃ³n del nÃºcleo 0. </p>
+<p>Configura el puerto serie, inicializa la semilla del generador aleatorio, configura los pines de LEDs y botones, y deja el display en el estado inicial (nivel 1, 3 vidas, tiempo 00), listo para que el jugador presione el botÃ³n de inicio. </p>
+
+</div>
+</div>
+<a id="ac764ee28e2916a7de10b22927e02d1a4" name="ac764ee28e2916a7de10b22927e02d1a4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac764ee28e2916a7de10b22927e02d1a4">&#9670;&#160;</a></span>setup1()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void setup1 </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>InicializaciÃ³n del nÃºcleo 1. </p>
+<p>Configura como salidas los pines de segmentos y de dÃ­gitos del display de 7 segmentos, y apaga inicialmente todos los dÃ­gitos. </p>
+
+</div>
+</div>
+<a name="doc-var-members" id="doc-var-members"></a><h2 id="header-doc-var-members" class="groupheader">Documentación de variables</h2>
+<a id="a9e04a30ca58759833fd2221ee6084371" name="a9e04a30ca58759833fd2221ee6084371"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9e04a30ca58759833fd2221ee6084371">&#9670;&#160;</a></span>boton4_desde</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">long boton4_desde = -1</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Marca de tiempo (millis()) desde la que se mantiene presionado el botÃ³n de inicio/reinicio (botÃ³n 4). </p>
+<p>Un valor de -1 indica que el botÃ³n no estÃ¡ presionado. </p>
+
+</div>
+</div>
+<a id="a487319e7086e6b6fa3b0394a89532aa9" name="a487319e7086e6b6fa3b0394a89532aa9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a487319e7086e6b6fa3b0394a89532aa9">&#9670;&#160;</a></span>INTERVALO_DISPLAY_MS</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const unsigned long INTERVALO_DISPLAY_MS = 2</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Tiempo (en ms) que permanece encendido cada dÃ­gito durante el multiplexado. </p>
+
+</div>
+</div>
+<a id="a01faeedff79378df11ab5d73d19d664d" name="a01faeedff79378df11ab5d73d19d664d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a01faeedff79378df11ab5d73d19d664d">&#9670;&#160;</a></span>lista</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int lista[10] = {0}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Secuencia aleatoria de botones (0-3) generada para la partida actual. </p>
+
+</div>
+</div>
+<a id="a9227daf8914570a842b84e45c54a5082" name="a9227daf8914570a842b84e45c54a5082"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9227daf8914570a842b84e45c54a5082">&#9670;&#160;</a></span>numero</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">volatile int numero[4] = {0, 0, 0, 0}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Valores mostrados actualmente en el display de 7 segmentos. </p>
+<ul>
+<li>numero[0]: nivel actual.</li>
+<li>numero[1]: vidas restantes.</li>
+<li>numero[2]: unidades del tiempo transcurrido.</li>
+<li>numero[3]: dÃ©cimas del tiempo transcurrido.</li>
+</ul>
+<p>Compartido entre nÃºcleos: el nÃºcleo 0 lo escribe y el nÃºcleo 1 lo lee de forma continua para refrescar el display. Se declara <span class="tt">volatile</span> para evitar que el compilador cachee su valor. </p>
+
+</div>
+</div>
+<a id="a74bb19ccf74bc54e08fe773513919936" name="a74bb19ccf74bc54e08fe773513919936"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a74bb19ccf74bc54e08fe773513919936">&#9670;&#160;</a></span>PIN_BOTONES</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const uint8_t PIN_BOTONES[5] = {0, 1, 2, 3, 4}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Pines de los botones del juego. </p>
+<p>Correspondencia:</p><ul>
+<li>BotÃ³n 0 -&gt; LED 20 -&gt; nÃºmero 0 (leds[1])</li>
+<li>BotÃ³n 1 -&gt; LED 19 -&gt; nÃºmero 1 (leds[2])</li>
+<li>BotÃ³n 2 -&gt; LED 18 -&gt; nÃºmero 2 (leds[3])</li>
+<li>BotÃ³n 3 -&gt; LED 17 -&gt; nÃºmero 3 (leds[0])</li>
+<li>BotÃ³n 4 -&gt; inicio / reinicio</li>
+</ul>
+<p>Se conserva la misma correspondencia Ã­ndice a Ã­ndice que en el original en MicroPython: botones[i] &lt;-&gt; leds[i], y es leds[lista[i]] el que se enciende al mostrar la secuencia. </p>
+
+</div>
+</div>
+<a id="a7899b0f7b4a8716bc5344cbf64efd0c2" name="a7899b0f7b4a8716bc5344cbf64efd0c2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7899b0f7b4a8716bc5344cbf64efd0c2">&#9670;&#160;</a></span>PIN_DIG</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const uint8_t PIN_DIG[4] = {12, 13, 14, 15}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Pines de los dÃ­gitos (comÃºn de cada display) del display de 7 segmentos. </p>
+
+</div>
+</div>
+<a id="a54c282f6923854565b174199becdd014" name="a54c282f6923854565b174199becdd014"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a54c282f6923854565b174199becdd014">&#9670;&#160;</a></span>PIN_LEDS</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const uint8_t PIN_LEDS[5] = {20, 19, 18, 17, 16}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Pines de los LEDs del juego. </p>
+<p>leds[0..3] corresponden a los botones 0..3 (nÃºmeros 0..3) y leds[4] es el LED de "respuesta" (pin 20). </p>
+
+</div>
+</div>
+<a id="accecb89f204e3023b848a24ea6c01f5e" name="accecb89f204e3023b848a24ea6c01f5e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#accecb89f204e3023b848a24ea6c01f5e">&#9670;&#160;</a></span>PIN_SEG</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const uint8_t PIN_SEG[7] = {5,6, 7, 8, 9, 10, 11}</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Pines de los segmentos (a, b, c, d, e, f, g) del display de 7 segmentos. </p>
+
+</div>
+</div>
+<a id="ad6631a5c682588052ff2daa4683e4f0b" name="ad6631a5c682588052ff2daa4683e4f0b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad6631a5c682588052ff2daa4683e4f0b">&#9670;&#160;</a></span>TABLA_7SEG</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const uint8_t TABLA_7SEG[11][7]</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Valor inicial:</b><div class="fragment"><div class="line">                         = {</div>
+<div class="line">    {1,1,1,1,1,1,0}, </div>
+<div class="line">    {0,1,1,0,0,0,0}, </div>
+<div class="line">    {1,1,0,1,1,0,1}, </div>
+<div class="line">    {1,1,1,1,0,0,1}, </div>
+<div class="line">    {0,1,1,0,0,1,1}, </div>
+<div class="line">    {1,0,1,1,0,1,1}, </div>
+<div class="line">    {1,0,1,1,1,1,1}, </div>
+<div class="line">    {1,1,1,0,0,0,0}, </div>
+<div class="line">    {1,1,1,1,1,1,1}, </div>
+<div class="line">    {1,1,1,1,0,1,1}, </div>
+<div class="line">    {0,0,0,0,0,0,0}  </div>
+<div class="line">}</div>
+</div><!-- fragment -->
+<p>Tabla de patrones de segmentos para cada nÃºmero del 0 al 9. </p>
+<p>El Ã­ndice 10 representa un dÃ­gito en blanco (todos los segmentos apagados), usado en las animaciones de parpadeo del display. </p>
+
+</div>
+</div>
+<a id="af9af01eec6273a990ce4a876dd731a0b" name="af9af01eec6273a990ce4a876dd731a0b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af9af01eec6273a990ce4a876dd731a0b">&#9670;&#160;</a></span>tiempo</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">float tiempo = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Tiempo (en s) entre LEDs al mostrar la secuencia del nivel actual. </p>
+
+</div>
+</div>
+<a id="ae56b1579152622b9c93a7381c8665470" name="ae56b1579152622b9c93a7381c8665470"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae56b1579152622b9c93a7381c8665470">&#9670;&#160;</a></span>tiempo_acumulado</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">float tiempo_acumulado = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Tiempo acumulado (en s) que el jugador tarda en completar correctamente cada nivel. </p>
+<p>Se reinicia al comienzo de cada partida nueva. </p>
+
+</div>
+</div>
+<a id="a360e8b46766716a87c97ccb45057f093" name="a360e8b46766716a87c97ccb45057f093"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a360e8b46766716a87c97ccb45057f093">&#9670;&#160;</a></span>TIEMPO_ACUMULADO_MAX</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const float TIEMPO_ACUMULADO_MAX = 99f</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>LÃ­mite mÃ¡ximo del tiempo acumulado de respuesta, mostrado en el display. </p>
+
+</div>
+</div>
+<a id="ab3a12aeec42c5e1ab5ead82fb3189bd4" name="ab3a12aeec42c5e1ab5ead82fb3189bd4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab3a12aeec42c5e1ab5ead82fb3189bd4">&#9670;&#160;</a></span>TIEMPO_REINICIO_MS</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const unsigned long TIEMPO_REINICIO_MS = 2000</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Tiempo (en ms) de pulsaciÃ³n larga del botÃ³n 4 necesario para solicitar un reinicio. </p>
+
+</div>
+</div>
+<a id="ad5398a58fa408652865cfa686889503e" name="ad5398a58fa408652865cfa686889503e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad5398a58fa408652865cfa686889503e">&#9670;&#160;</a></span>time_resp</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">float time_resp = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Tiempo total (en s) disponible para que el jugador responda el nivel actual. </p>
+
+</div>
+</div>
+<a id="ad742903c7f4c72d558becbaeb67fd3b3" name="ad742903c7f4c72d558becbaeb67fd3b3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad742903c7f4c72d558becbaeb67fd3b3">&#9670;&#160;</a></span>vidas</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int vidas = 3</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Vidas restantes del jugador en la partida actual. </p>
+
+</div>
+</div>
+</div><!-- contents -->
+</div><!-- doc-content -->
+<div id="page-nav" class="page-nav-panel">
+<div id="page-nav-resize-handle"></div>
+<div id="page-nav-tree">
+<div id="page-nav-contents">
+</div><!-- page-nav-contents -->
+</div><!-- page-nav-tree -->
+</div><!-- page-nav -->
+</div><!-- container -->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="navelem"><a href="dir_abfea715aa41b6007cfdd1fee6d677b2.html">Prac_2_arduino</a></li><li class="navelem"><a href="dir_948b8c58b0aaeaad5fcb0ad04e6e62bf.html">arduino_comentado_doxigen</a></li><li class="navelem"><a href="arduino__comentado__doxigen_8ino.html">arduino_comentado_doxigen.ino</a></li>
+    <li class="footer">Generado por <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.18.0 </li>
+  </ul>
+</div>
+</body>
+</html>

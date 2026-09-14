@@ -1,6 +1,6 @@
 /**
- * @file simon_pico.ino
- * @brief Juego estilo "Simon" para Raspberry Pi Pico (RP2040), portado a
+ * @file secuencia.ino
+ * @brief Juego estilo memoria para Raspberry Pi Pico (RP2040), portado a
  *        Arduino IDE usando el core arduino-pico.
  *
  * @details
@@ -43,10 +43,10 @@ const uint8_t PIN_LEDS[5] = {20, 19, 18, 17, 16};
  * @brief Pines de los botones del juego.
  *
  * Correspondencia:
- *  - Botón 0 -> LED 17 -> número 0 (leds[1])
- *  - Botón 1 -> LED 18 -> número 1 (leds[2])
- *  - Botón 2 -> LED 19 -> número 2 (leds[3])
- *  - Botón 3 -> LED 20 -> número 3 (leds[0])
+ *  - Botón 0 -> LED 20 -> número 0 (leds[1])
+ *  - Botón 1 -> LED 19 -> número 1 (leds[2])
+ *  - Botón 2 -> LED 18 -> número 2 (leds[3])
+ *  - Botón 3 -> LED 17 -> número 3 (leds[0])
  *  - Botón 4 -> inicio / reinicio
  *
  * Se conserva la misma correspondencia índice a índice que en el
@@ -104,7 +104,7 @@ const unsigned long INTERVALO_DISPLAY_MS = 2;
 const unsigned long TIEMPO_REINICIO_MS = 2000;
 
 /** @brief Límite máximo del tiempo acumulado de respuesta, mostrado en el display. */
-const float TIEMPO_ACUMULADO_MAX = 9.9f;
+const float TIEMPO_ACUMULADO_MAX = 99f;
 
 /**
  * @name Variables de estado del juego
@@ -246,33 +246,35 @@ void multiplexar() {
  * correspondientes.
  *
  * @param nNivel  Nivel actual a mostrar (0-9; se limita a 9 si se excede).
- * @param nVidas  Vidas restantes a mostrar (0-9; se limita a 9 si se excede).
+ * @param nVidas  Vidas restantes a mostrar (0-3; se limita a 3 si se excede).
  * @param nTiempo Tiempo acumulado a mostrar, en segundos (se limita
  *                al rango [0, TIEMPO_ACUMULADO_MAX]).
  */
-void actualizarNumero(int nNivel, int nVidas, float nTiempo) {
-    if (nTiempo > TIEMPO_ACUMULADO_MAX) nTiempo = TIEMPO_ACUMULADO_MAX;
-    if (nTiempo < 0) nTiempo = 0;
-
-    int entero = (int)nTiempo;
-    int decimal = (int)round((nTiempo - entero) * 10.0f);
-
-    if (decimal >= 10) {
-        decimal = 0;
-        entero += 1;
+void actualizarNumero(int nNivel, int nVidas, float n_tiempo) {
+    if (n_tiempo > 99.99) {
+        n_tiempo = 99.99;
     }
-    if (entero > 9) entero = 9;
+
+    if (n_tiempo < 0) {
+        n_tiempo = 0;
+    }
+
+    int tiempo_x100 = round(n_tiempo * 100);
+
+    int decenas = tiempo_x100 / 1000;
+    int unidades = (tiempo_x100 / 100) % 10;
+    
 
     numero[0] = (nNivel >= 0 && nNivel <= 9) ? nNivel : 9;
     numero[1] = (nVidas >= 0 && nVidas <= 3) ? nVidas : 3;
-    numero[2] = entero;
-    numero[3] = decimal;
+    numero[2] = decenas;
+    numero[3] = unidades;
 }
 
 /**
  * @brief Espera una cantidad de milisegundos sin bloquear el display.
  *
- * En la versión original en MicroPython, esta función también
+ * En la versión  en MicroPython, esta función también
  * invocaba la rutina de multiplexado para no congelar el display.
  * En esta versión el display se refresca de forma independiente en
  * el núcleo 1, por lo que basta con un delay() convencional.
@@ -366,7 +368,7 @@ void animacionPerdidaVida(uint8_t veces = 3, unsigned long duracionMs = 150) {
 /**
  * @brief Animación de finalización exitosa (partida ganada).
  *
- * Realiza un barrido de ida y vuelta (estilo "KITT") en dos
+ * Realiza un barrido de ida y vuelta en dos
  * repeticiones, seguido de tres destellos con los cuatro LEDs
  * encendidos simultáneamente.
  */
@@ -617,7 +619,7 @@ int esperarConParpadeo(float tiempoTotalSeg, int nivel, int vidasActuales) {
             if (estadoActual && !estadoAnterior[i]) {
 
                 // Antirrebote (debounce).
-                if (diffMs(ahora, ultimaPulsacion) >= 40) {
+                if (diffMs(ahora, ultimaPulsacion) >= 80) {
                     ultimaPulsacion = ahora;
 
                     // Enciende el LED correspondiente.

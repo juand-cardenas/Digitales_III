@@ -97,7 +97,7 @@ const unsigned long INTERVALO_DISPLAY_MS = 2;
 const unsigned long TIEMPO_REINICIO_MS = 2000;
 
 // Límite máximo del tiempo acumulado de respuesta
-const float TIEMPO_ACUMULADO_MAX = 9.9f;
+const float TIEMPO_ACUMULADO_MAX = 99.0f;
 
 // =================================================
 // VARIABLES DEL JUEGO (usadas SOLO en el núcleo 0)
@@ -107,7 +107,7 @@ float tiempo = 0;
 float time_resp = 0;
 int vidas = 3;
 
-int lista[10] = {0};
+int lista[9] = {0};
 
 // Tiempo acumulado que el jugador tarda en
 // completar correctamente cada nivel. Se reinicia
@@ -198,23 +198,25 @@ void multiplexar() {
 // (núcleo 0 -> escribe en "numero", que lee núcleo 1)
 // =================================================
 
-void actualizarNumero(int nNivel, int nVidas, float nTiempo) {
-    if (nTiempo > TIEMPO_ACUMULADO_MAX) nTiempo = TIEMPO_ACUMULADO_MAX;
-    if (nTiempo < 0) nTiempo = 0;
-
-    int entero = (int)nTiempo;
-    int decimal = (int)round((nTiempo - entero) * 10.0f);
-
-    if (decimal >= 10) {
-        decimal = 0;
-        entero += 1;
+void actualizarNumero(int nNivel, int nVidas, float n_tiempo) {
+    if (n_tiempo > 99.99) {
+        n_tiempo = 99.99;
     }
-    if (entero > 9) entero = 9;
+
+    if (n_tiempo < 0) {
+        n_tiempo = 0;
+    }
+
+    int tiempo_x100 = round(n_tiempo * 100);
+
+    int decenas = tiempo_x100 / 1000;
+    int unidades = (tiempo_x100 / 100) % 10;
+    
 
     numero[0] = (nNivel >= 0 && nNivel <= 9) ? nNivel : 9;
     numero[1] = (nVidas >= 0 && nVidas <= 3) ? nVidas : 3;
-    numero[2] = entero;
-    numero[3] = decimal;
+    numero[2] = decenas;
+    numero[3] = unidades;
 }
 
 // =================================================
@@ -561,7 +563,7 @@ int esperarConParpadeo(float tiempoTotalSeg, int nivel, int vidasActuales) {
             if (estadoActual && !estadoAnterior[i]) {
 
                 // Debounce
-                if (diffMs(ahora, ultimaPulsacion) >= 40) {
+                if (diffMs(ahora, ultimaPulsacion) >= 80) {
                     ultimaPulsacion = ahora;
 
                     // Encender LED correspondiente
@@ -589,6 +591,9 @@ int esperarConParpadeo(float tiempoTotalSeg, int nivel, int vidasActuales) {
 
                     // ¿Terminó el nivel?
                     if (posicion == nivel) {
+                        float timer_off=diffMs(millis(), inicio);
+                        Serial.print("este es el tiempo gastado por el jugador: "); 
+                        Serial.println(timer_off/1000);
                         digitalWrite(PIN_LEDS[4], LOW);
 
                         float tiempoNivel = diffMs(ahora, inicio) / 1000.0f;
@@ -604,6 +609,10 @@ int esperarConParpadeo(float tiempoTotalSeg, int nivel, int vidasActuales) {
             estadoAnterior[i] = estadoActual;
         }
     }
+    float timer_off=diffMs(millis(), inicio);
+    Serial.print("este es el tiempo gastado por el jugador: "); 
+    Serial.println(timer_off/1000);
+    
 
     // =============================================
     // SE ACABÓ EL TIEMPO
@@ -659,6 +668,7 @@ void loop() {
     for (uint8_t i = 0; i < 9; i++) {
         lista[i] = random(0, 4); // 0..3
     }
+    
 
     // Reiniciar vidas y tiempo acumulado (nueva partida)
     vidas = 3;
@@ -687,10 +697,17 @@ void loop() {
         else                 tiempo = 0.166f;
 
         time_resp = 1.25f * (2.0f * tiempo * nivel);
+        Serial.print("es el tiempo que tiene el jugador para meter el patron: ");
+        Serial.println(time_resp);
+        float tiempo_2=(tiempo*2*nivel);
+        Serial.print("este esl tiempo esperado de los leds: ");
+        Serial.println(tiempo_2);
 
         // =========================================
         // MOSTRAR SECUENCIA
         // =========================================
+        unsigned long inicio = millis();
+        
         for (uint8_t i = 0; i < (uint8_t)nivel; i++) {
 
             digitalWrite(PIN_LEDS[lista[i]], HIGH);
@@ -707,14 +724,16 @@ void loop() {
             // Pausa entre un LED y el siguiente. NO se
             // aplica tras el ÚLTIMO LED, para que la
             // fase de respuesta comience de inmediato.
-            if (i < (uint8_t)(nivel - 1)) {
+            if (i < (uint8_t)(nivel )) {
                 if (esperarTiempo(tiempo)) {
                     reiniciarJuego = true;
                     break;
                 }
             }
         }
-
+        float timer_off=diffMs(millis(), inicio);
+        Serial.print("tiempo de la presentacion de los leds ejecutando: ");
+        Serial.println(timer_off/1000);
         if (reiniciarJuego) break;
 
         // =========================================

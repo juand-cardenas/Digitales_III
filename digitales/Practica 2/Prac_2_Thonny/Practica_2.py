@@ -82,7 +82,7 @@ INTERVALO_DISPLAY = 2
 TIEMPO_REINICIO = 2000       # 2 segundos
 
 # Límite máximo del tiempo acumulado de respuesta
-TIEMPO_ACUMULADO_MAX = 9.9    # segundos
+TIEMPO_ACUMULADO_MAX = 99    # segundos
 
 
 # =================================================
@@ -196,33 +196,27 @@ def multiplexar():
 
 def actualizar_numero(n_nivel, n_vidas, n_tiempo):
 
-    if n_tiempo > TIEMPO_ACUMULADO_MAX:
+    # Convertir segundos (con decimales) a décimas de segundo enteras
+    n_decimas = n_tiempo * 10
 
-        n_tiempo = TIEMPO_ACUMULADO_MAX
+    if n_decimas > (TIEMPO_ACUMULADO_MAX ):
+        n_decimas = TIEMPO_ACUMULADO_MAX 
 
-    if n_tiempo < 0:
+    if n_decimas < 0:
+        n_decimas = 0
 
-        n_tiempo = 0
+    tiempo_x100 = int(round(n_tiempo * 100))
 
-    entero = int(n_tiempo)
-
-    decimal = int(round((n_tiempo - entero) * 10))#me da la parte decimal.
-    
-
-    if decimal >= 10:
-
-        decimal = 0
-
-        entero += 1
-
-    if entero > 9:
-
-        entero = 9
+    decenas = tiempo_x100 // 1000
+    unidades = (tiempo_x100 // 100) % 10
+    if decenas>9:
+        decenas=9
+        unidades=9
 
     numero[0] = n_nivel if 0 <= n_nivel <= 9 else 9
     numero[1] = n_vidas if 0 <= n_vidas <= 3 else 3
-    numero[2] = entero
-    numero[3] = decimal 
+    numero[2] = decenas     # unidades
+    numero[3] = unidades    # décimas
 
 
 # =================================================
@@ -693,7 +687,7 @@ def esperar_con_parpadeo(tiempo_total, nivel, vidas_actuales):
                 # Debounce
                 # ---------------------------------
 
-                if time.ticks_diff(ahora, ultima_pulsacion) >= 40:
+                if time.ticks_diff(ahora, ultima_pulsacion) >= 80:
 
                     ultima_pulsacion = ahora
 

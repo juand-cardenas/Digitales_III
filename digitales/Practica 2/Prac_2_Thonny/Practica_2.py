@@ -782,7 +782,8 @@ def esperar_con_parpadeo(tiempo_total, nivel, vidas_actuales):
     # =============================================
     # SE ACABÓ EL TIEMPO
     # =============================================
-
+    tiempo_del_player=time.ticks_diff(time.ticks_ms(), inicio) / 1000
+    print("este el el tempo que gasto el jugador en responder",tiempo_del_player,"\n")
     leds[4].value(0)
 
     # ---------------------------------------------
@@ -896,17 +897,19 @@ while True:
         # =========================================
         
         time_resp = 1.25 * (2 * tiempo * nivel)
+        print("este es el tiempo de respuesta del jugador",time_resp,"\n")
+        print("este es el tiempo que debe durar la presentacion",tiempo*2*nivel,"\n")
 
         # =========================================
         # MOSTRAR SECUENCIA
         # =========================================
-
+        led_encendidio=time.ticks_ms()
         for i in range(nivel):
 
             # -------------------------------------
             # Encender LED correspondiente
             # -------------------------------------
-
+            
             leds[lista[i]].value(1)
 
             # -------------------------------------
@@ -935,14 +938,15 @@ while True:
             # de inmediato.
             # -------------------------------------
 
-            if i < nivel - 1:
+            if i < nivel  :
 
                 if esperar_tiempo(tiempo):
 
                     reiniciar_juego = True
 
                     break
-
+        tiempo_led_total = time.ticks_diff(time.ticks_ms(), led_encendidio) / 1000
+        print("este es el tiempo que dura la presentacion",tiempo_led_total,"\n")
         # ¿SE SOLICITÓ REINICIO?
 
         if reiniciar_juego:
@@ -952,8 +956,9 @@ while True:
         # =========================================
         # TIEMPO DE RESPUESTA
         # =========================================
-
+        
         resultado = esperar_con_parpadeo(time_resp, nivel, vidas)
+        
 
         # =========================================
         # ¿SE SOLICITÓ REINICIO?
@@ -1003,6 +1008,7 @@ while True:
         # =========================================
 
         actualizar_numero(nivel, vidas, tiempo_acumulado)
+        print("tiempo acumulado", tiempo_acumulado,"\n")
 
         # =========================================
         # APAGAR TODOS LOS LEDS

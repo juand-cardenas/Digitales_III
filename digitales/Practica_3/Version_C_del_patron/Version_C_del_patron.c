@@ -209,9 +209,6 @@ static inline bool boton_inicio_activo(void) {
  */
 static void mostrar_digito(uint8_t pos) {
     int n = numero[pos];
-    if (n < 0 || n > 10) {
-        n = 10;
-    }
 
     /* Dígitos activos en bajo: todos en 1 salvo el seleccionado. */
     uint32_t dig = MASK_DIG & ~(1u << (DIG_BASE + pos));

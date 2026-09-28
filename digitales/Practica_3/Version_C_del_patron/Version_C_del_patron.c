@@ -2,6 +2,7 @@
  * @file main.c
  * @brief Juego estilo "Simon" para Raspberry Pi Pico (RP2040) en C con el Pico SDK.
  *
+ * @details
  * Núcleo 0 (main):
  *   - Toda la lógica del juego: LEDs de patrón, botones, vidas, niveles,
  *     animaciones y botón de reinicio.
@@ -27,6 +28,9 @@
  *   El arreglo numero[4] es volatile: el núcleo 0 escribe y el núcleo 1 lee.
  *   En el RP2040 la escritura de un int alineado de 32 bits es atómica, por
  *   lo que no se necesita mutex para este caso.
+ *
+ * @note Para generar la documentación de las funciones y variables
+ *       @c static, el Doxyfile debe tener @c EXTRACT_STATIC = YES.
  */
 
 #include <stdio.h>
@@ -39,50 +43,71 @@
 #include <stdlib.h>
 #include "hardware/gpio.h"
 
-/* =================================================
- * MAPA DE GPIO
+/**
+ * @defgroup gpio_map Mapa de GPIO
+ * @brief Asignación de pines y máscaras de bits.
  *
  * Los pines están agrupados en bloques contiguos, así
  * cada grupo es una máscara de bits simple:
  *
- *   GPIO  0..4   Botones 0..3 + botón 4 (inicio/reinicio)
- *   GPIO  5..11  Segmentos a..g   (activos en BAJO)
- *   GPIO 12..15  Dígitos 0..3     (activos en BAJO)
- *   GPIO 16..20  LEDs: GPIO20=led0 ... GPIO17=led3, GPIO16=led4 (respuesta)
- * ================================================= */
+ * | GPIO    | Función                                              |
+ * |---------|------------------------------------------------------|
+ * | 0..4    | Botones 0..3 + botón 4 (inicio/reinicio)             |
+ * | 5..11   | Segmentos a..g (activos en BAJO)                     |
+ * | 12..15  | Dígitos 0..3 (activos en BAJO)                       |
+ * | 16..20  | LEDs: GPIO20=led0 ... GPIO17=led3, GPIO16=led4 (resp)|
+ * @{
+ */
 
-#define BOTONES_BASE     0
-#define SEG_BASE         5
-#define DIG_BASE         12
-#define LEDS_BASE        16
+#define BOTONES_BASE     0   /**< Primer GPIO del bloque de botones. */
+#define SEG_BASE         5   /**< Primer GPIO del bloque de segmentos (a..g). */
+#define DIG_BASE         12  /**< Primer GPIO del bloque de selección de dígitos. */
+#define LEDS_BASE        16  /**< Primer GPIO del bloque de LEDs. */
 
-#define MASK_BOTONES     (0x1Fu << BOTONES_BASE)
-#define MASK_SEG         (0x7Fu << SEG_BASE)
-#define MASK_DIG         (0x0Fu << DIG_BASE)
-#define MASK_LEDS        (0x1Fu << LEDS_BASE)
+#define MASK_BOTONES     (0x1Fu << BOTONES_BASE) /**< Máscara de los 5 botones (GPIO 0..4). */
+#define MASK_SEG         (0x7Fu << SEG_BASE)     /**< Máscara de los 7 segmentos (GPIO 5..11). */
+#define MASK_DIG         (0x0Fu << DIG_BASE)     /**< Máscara de los 4 dígitos (GPIO 12..15). */
+#define MASK_LEDS        (0x1Fu << LEDS_BASE)    /**< Máscara de los 5 LEDs (GPIO 16..20). */
 
-/** Máscara del LED i (0..4). led0 -> GPIO20 ... led4 -> GPIO16. */
+/**
+ * @brief Máscara del LED i (0..4).
+ * @param i Índice del LED. led0 -> GPIO20 ... led4 -> GPIO16.
+ */
 #define LED_MASK(i)      (1u << (LEDS_BASE + 4 - (i)))
 
-/** LED de respuesta (leds[4], GPIO16). */
+/** @brief LED de respuesta (leds[4], GPIO16). */
 #define MASK_LED_RESP    LED_MASK(4)
 
-/** LEDs de patrón (leds[0..3], GPIO17..20). */
+/** @brief LEDs de patrón (leds[0..3], GPIO17..20). */
 #define MASK_LEDS_PATRON (MASK_LEDS & ~MASK_LED_RESP)
 
-/** Bit del botón de inicio/reinicio dentro de botones_leer(). */
+/** @brief Bit del botón de inicio/reinicio dentro del valor devuelto por botones_leer(). */
 #define BOTON_INICIO_BIT (1u << 4)
 
-/* =================================================
- * DISPLAY DE 7 SEGMENTOS
+/** @} */ /* fin gpio_map */
+
+/**
+ * @defgroup display Display de 7 segmentos
+ * @brief Tabla de códigos, buffer compartido y multiplexado del display.
  *
  * Código de cada número (bit0=a ... bit6=g). Como los
  * segmentos son activos en BAJO, la tabla guarda ya el
  * valor listo para escribir en los GPIO 5..11.
- * ================================================= */
+ * @{
+ */
 
+/**
+ * @brief Convierte un código de segmentos (bit0=a ... bit6=g) al valor de pines.
+ * @param code Código de 7 bits con 1 = segmento encendido.
+ * @return Valor listo para escribir en GPIO 5..11 (lógica invertida, activo en bajo).
+ */
 #define SEG_PINS(code)   (((~(uint32_t)(code)) & 0x7Fu) << SEG_BASE)
 
+/**
+ * @brief Tabla de conversión número -> valor de pines de segmentos.
+ *
+ * Índices 0..9 son los dígitos; el índice 10 es el dígito en blanco.
+ */
 static const uint32_t TABLA_7SEG[11] = {
     SEG_PINS(0x3F), /* 0 */
     SEG_PINS(0x06), /* 1 */
@@ -98,58 +123,95 @@ static const uint32_t TABLA_7SEG[11] = {
 };
 
 /**
- * numero[0] -> Nivel actual
- * numero[1] -> Vidas restantes
- * numero[2] -> Decenas de segundo del tiempo acumulado
- * numero[3] -> Unidades de segundo del tiempo acumulado
- * (10 = dígito en blanco)
+ * @brief Valores mostrados en cada dígito del display.
+ *
+ * - numero[0] -> Nivel actual
+ * - numero[1] -> Vidas restantes
+ * - numero[2] -> Decenas de segundo del tiempo acumulado
+ * - numero[3] -> Unidades de segundo del tiempo acumulado
+ * - (10 = dígito en blanco)
+ *
+ * @note El núcleo 0 escribe y el núcleo 1 lee (ver mostrar_digito()).
  */
 static volatile int numero[4] = {0, 0, 0, 0};
 
-/** Tiempo que permanece encendido cada dígito (µs). */
+/** @brief Tiempo que permanece encendido cada dígito (µs). */
 #define INTERVALO_DISPLAY_US   2000u
 
-/** Duración de la pulsación larga para reiniciar (ms). */
+/** @} */ /* fin display */
+
+/** @brief Duración de la pulsación larga para reiniciar (ms). */
 #define TIEMPO_REINICIO_MS     2000u
 
-/** Límite máximo del tiempo acumulado (s). */
+/** @brief Límite máximo del tiempo acumulado (s). */
 #define TIEMPO_ACUMULADO_MAX   99.0f
 
-/* =================================================
- * VARIABLES DEL JUEGO (solo núcleo 0)
- * ================================================= */
+/**
+ * @defgroup vars_juego Variables y tipos del juego
+ * @brief Estado del juego (solo núcleo 0).
+ * @{
+ */
 
+/** @brief Secuencia aleatoria del juego (valores 0..3, uno por nivel). */
 static int   lista[9] = {0};
+
+/** @brief Tiempo total acumulado por el jugador en la partida (s). */
 static float tiempo_acumulado = 0.0f;
 
+/** @brief Indica si el botón de inicio/reinicio está siendo mantenido. */
 static bool     boton4_presionado = false;
+
+/** @brief Instante (ms desde el arranque) en que se empezó a presionar el botón 4. */
 static uint32_t boton4_desde = 0;
 
+/**
+ * @brief Resultado de una fase de respuesta del jugador.
+ */
 typedef enum {
-    REINICIO_SOLICITADO = -1,
-    NIVEL_ERROR         = 0,
-    NIVEL_OK            = 1
+    REINICIO_SOLICITADO = -1, /**< El jugador mantuvo el botón de reinicio. */
+    NIVEL_ERROR         = 0,  /**< Pulsación incorrecta o tiempo agotado. */
+    NIVEL_OK            = 1   /**< Patrón completado correctamente. */
 } resultado_nivel_t;
 
-/* =================================================
- * UTILIDADES DE TIEMPO
- * ================================================= */
+/** @} */ /* fin vars_juego */
 
-/** Milisegundos desde el arranque (equivalente a millis()). */
+/**
+ * @defgroup tiempo Utilidades de tiempo
+ * @{
+ */
+
+/**
+ * @brief Milisegundos desde el arranque (equivalente a millis()).
+ * @return Tiempo transcurrido desde el arranque, en ms.
+ */
 static inline uint32_t ahora_ms(void) {
     return to_ms_since_boot(get_absolute_time());
 }
 
-/** Diferencia segura ante desbordamiento (equivalente a ticks_diff). */
+/**
+ * @brief Diferencia segura ante desbordamiento (equivalente a ticks_diff).
+ * @param ahora Instante actual (ms).
+ * @param antes Instante anterior (ms).
+ * @return Milisegundos transcurridos entre @p antes y @p ahora.
+ */
 static inline uint32_t diff_ms(uint32_t ahora, uint32_t antes) {
     return ahora - antes;
 }
 
-/* =================================================
- * ACCESO A GPIO POR MÁSCARAS
- * ================================================= */
+/** @} */ /* fin tiempo */
 
-/** Configura todos los GPIO del juego sin estados intermedios. */
+/**
+ * @defgroup gpio_acceso Acceso a GPIO por máscaras
+ * @{
+ */
+
+/**
+ * @brief Configura todos los GPIO del juego sin estados intermedios.
+ *
+ * Inicializa los pines en modo SIO, fija el nivel inicial antes de habilitar
+ * las salidas (LEDs apagados, segmentos y dígitos apagados), define las
+ * direcciones y activa el pull-down de los botones.
+ */
 static void gpio_configurar(void) {
     const uint32_t mask_salidas = MASK_LEDS | MASK_SEG | MASK_DIG;
 
@@ -170,42 +232,61 @@ static void gpio_configurar(void) {
     }
 }
 
-/** Escribe el estado completo de los 5 LEDs de una vez. */
+/**
+ * @brief Escribe el estado completo de los 5 LEDs de una vez.
+ * @param mask Máscara con los LEDs a encender (ver LED_MASK()).
+ */
 static inline void leds_escribir(uint32_t mask) {
     gpio_put_masked(MASK_LEDS, mask);
 }
 
-/** Escribe el estado de los 4 LEDs de patrón sin tocar el LED de respuesta. */
+/**
+ * @brief Escribe el estado de los 4 LEDs de patrón sin tocar el LED de respuesta.
+ * @param mask Máscara con los LEDs de patrón a encender.
+ */
 static inline void patron_escribir(uint32_t mask) {
     gpio_put_masked(MASK_LEDS_PATRON, mask);
 }
 
-/** Apaga todos los LEDs en una sola operación. */
+/**
+ * @brief Apaga todos los LEDs en una sola operación.
+ */
 static inline void apagar_leds(void) {
     gpio_clr_mask(MASK_LEDS);
 }
 
 /**
- * Lee TODOS los botones en una sola lectura del bus.
+ * @brief Lee TODOS los botones en una sola lectura del bus.
  * @return bits 0..3 = botones 0..3, bit 4 = botón inicio/reinicio.
  */
 static inline uint32_t botones_leer(void) {
     return (gpio_get_all() & MASK_BOTONES) >> BOTONES_BASE;
 }
 
+/**
+ * @brief Indica si el botón de inicio/reinicio está presionado.
+ * @retval true  El botón 4 está presionado.
+ * @retval false El botón 4 está suelto.
+ */
 static inline bool boton_inicio_activo(void) {
     return (botones_leer() & BOTON_INICIO_BIT) != 0;
 }
 
-/* =================================================
- * DISPLAY: MULTIPLEXADO (núcleo 1)
- * ================================================= */
+/** @} */ /* fin gpio_acceso */
 
 /**
- * Muestra el dígito 'pos' (0..3).
+ * @addtogroup display
+ * @{
+ */
+
+/**
+ * @brief Muestra el dígito @p pos (0..3) del display.
+ *
  * Segmentos y selección de dígito cambian en UNA sola escritura de 11 bits
  * (GPIO 5..15), por lo que nunca hay un instante con el número de un dígito
  * sobre el dígito anterior (sin "ghosting" por estados intermedios).
+ *
+ * @param pos Posición del dígito a encender (0..3).
  */
 static void mostrar_digito(uint8_t pos) {
     int n = numero[pos];
@@ -216,7 +297,14 @@ static void mostrar_digito(uint8_t pos) {
     gpio_put_masked(MASK_SEG | MASK_DIG, TABLA_7SEG[n] | dig);
 }
 
-/** Punto de entrada del núcleo 1: multiplexa el display para siempre. */
+/**
+ * @brief Punto de entrada del núcleo 1: multiplexa el display para siempre.
+ *
+ * Recorre los 4 dígitos, manteniendo cada uno encendido INTERVALO_DISPLAY_US
+ * microsegundos con temporización absoluta (sin acumular deriva).
+ *
+ * @note Esta función no retorna.
+ */
 static void core1_main(void) {
     uint8_t  pos = 0;
     uint32_t proximo = time_us_32();
@@ -233,8 +321,14 @@ static void core1_main(void) {
 }
 
 /**
- * Actualiza nivel / vidas / tiempo (núcleo 0 escribe, núcleo 1 lee).
+ * @brief Actualiza nivel / vidas / tiempo (núcleo 0 escribe, núcleo 1 lee).
+ *
  * El tiempo se muestra como dos dígitos de segundos (00..99).
+ * Los valores fuera de rango se saturan.
+ *
+ * @param nivel Nivel actual (0..9).
+ * @param vidas Vidas restantes (0..3).
+ * @param t     Tiempo acumulado en segundos (se limita a 0..99.99).
  */
 static void actualizar_numero(int nivel, int vidas, float t) {
     if (t > 99.99f) t = 99.99f;
@@ -250,11 +344,18 @@ static void actualizar_numero(int nivel, int vidas, float t) {
     numero[3] = unidades;
 }
 
-/* =================================================
- * ANIMACIONES
- * ================================================= */
+/** @} */ /* fin addtogroup display */
 
-/** Nivel superado: barrido rápido LED0 -> LED3. */
+/**
+ * @defgroup animaciones Animaciones
+ * @brief Efectos visuales con los LEDs y el display.
+ * @note Todas las animaciones son bloqueantes (usan sleep_ms()).
+ * @{
+ */
+
+/**
+ * @brief Nivel superado: barrido rápido LED0 -> LED3.
+ */
 static void animacion_nivel_superado(void) {
     apagar_leds();
     for (uint8_t i = 0; i < 4; i++) {
@@ -264,7 +365,9 @@ static void animacion_nivel_superado(void) {
     patron_escribir(0);
 }
 
-/** Entrada incorrecta: los 4 LEDs juntos, 2 parpadeos. */
+/**
+ * @brief Entrada incorrecta: los 4 LEDs juntos, 2 parpadeos.
+ */
 static void animacion_entrada_incorrecta(void) {
     apagar_leds();
     for (uint8_t r = 0; r < 2; r++) {
@@ -275,7 +378,9 @@ static void animacion_entrada_incorrecta(void) {
     }
 }
 
-/** Tiempo agotado: LED de respuesta fijo y parpadean los dígitos de tiempo. */
+/**
+ * @brief Tiempo agotado: LED de respuesta fijo y parpadean los dígitos de tiempo.
+ */
 static void animacion_agotamiento_tiempo(void) {
     gpio_set_mask(MASK_LED_RESP);
 
@@ -295,7 +400,9 @@ static void animacion_agotamiento_tiempo(void) {
     gpio_clr_mask(MASK_LED_RESP);
 }
 
-/** Pérdida de vida: parpadea solo el dígito de vidas (valor anterior). */
+/**
+ * @brief Pérdida de vida: parpadea solo el dígito de vidas (valor anterior).
+ */
 static void animacion_perdida_vida(void) {
     int valor_actual = numero[1];
 
@@ -308,7 +415,9 @@ static void animacion_perdida_vida(void) {
     }
 }
 
-/** Victoria: barrido ida y vuelta x2 + 3 destellos con los 4 LEDs juntos. */
+/**
+ * @brief Victoria: barrido ida y vuelta x2 + 3 destellos con los 4 LEDs juntos.
+ */
 static void animacion_victoria(void) {
     apagar_leds();
 
@@ -332,11 +441,17 @@ static void animacion_victoria(void) {
     }
 }
 
-/* =================================================
- * LÓGICA DE TIEMPO / REINICIO
- * ================================================= */
+/** @} */ /* fin animaciones */
 
-/** Suma 'segundos' al acumulador sin sobrepasar TIEMPO_ACUMULADO_MAX. */
+/**
+ * @defgroup logica_tiempo Lógica de tiempo y reinicio
+ * @{
+ */
+
+/**
+ * @brief Suma @p segundos al acumulador sin sobrepasar TIEMPO_ACUMULADO_MAX.
+ * @param segundos Tiempo a sumar (s).
+ */
 static void acumular_tiempo(float segundos) {
     if (tiempo_acumulado < TIEMPO_ACUMULADO_MAX) {
         tiempo_acumulado += segundos;
@@ -348,8 +463,13 @@ static void acumular_tiempo(float segundos) {
 }
 
 /**
- * Revisa el botón de reinicio (botón 4). Se llama continuamente.
- * @return true si se completó una pulsación larga.
+ * @brief Revisa el botón de reinicio (botón 4). Se llama continuamente.
+ *
+ * Si el botón se mantiene TIEMPO_REINICIO_MS, apaga los LEDs, espera a que
+ * se suelte (para que no reinicie solo) y notifica la pulsación larga.
+ *
+ * @retval true  Se completó una pulsación larga.
+ * @retval false No hay pulsación larga en curso o completada.
  */
 static bool revisar_boton_reinicio(void) {
     uint32_t ahora = ahora_ms();
@@ -377,7 +497,12 @@ static bool revisar_boton_reinicio(void) {
     return false;
 }
 
-/** Espera 'tiempo_seg' revisando el botón de reinicio. true = reinicio. */
+/**
+ * @brief Espera @p tiempo_seg revisando el botón de reinicio.
+ * @param tiempo_seg Duración de la espera (s).
+ * @retval true  Se solicitó un reinicio durante la espera.
+ * @retval false La espera terminó normalmente.
+ */
 static bool esperar_tiempo(float tiempo_seg) {
     uint32_t inicio   = ahora_ms();
     uint32_t total_ms = (uint32_t)(tiempo_seg * 1000.0f);
@@ -392,8 +517,12 @@ static bool esperar_tiempo(float tiempo_seg) {
 }
 
 /**
- * Espera el inicio del juego.
+ * @brief Espera el inicio del juego.
+ *
  * Pulsación corta: inicia. Pulsación larga: se ignora y sigue esperando.
+ * Antes de esperar, exige que el botón esté suelto.
+ *
+ * @note Función bloqueante: retorna solo cuando se detecta una pulsación corta.
  */
 static void esperar_inicio(void) {
     printf("Esperando inicio...\n");
@@ -433,13 +562,28 @@ static void esperar_inicio(void) {
     }
 }
 
-/* =================================================
- * FASE DE RESPUESTA
- * ================================================= */
+/** @} */ /* fin logica_tiempo */
 
 /**
- * Espera la respuesta del jugador mientras el LED de respuesta parpadea.
- * @return NIVEL_OK, NIVEL_ERROR (error o tiempo agotado) o REINICIO_SOLICITADO.
+ * @defgroup fase_respuesta Fase de respuesta
+ * @{
+ */
+
+/**
+ * @brief Espera la respuesta del jugador mientras el LED de respuesta parpadea.
+ *
+ * El parpadeo se acelera a medida que se agota el tiempo. Cada pulsación
+ * (con antirrebote de 80 ms) se compara con la secuencia @ref lista. Los
+ * LEDs de pulsación permanecen encendidos 350 ms. Actualiza el display con
+ * el tiempo en vivo y acumula el tiempo gastado al terminar.
+ *
+ * @param tiempo_total_seg Tiempo máximo disponible para responder (s).
+ * @param nivel            Nivel actual (también es la longitud del patrón).
+ * @param vidas_actuales   Vidas restantes (solo para el display).
+ *
+ * @retval NIVEL_OK             El jugador completó el patrón.
+ * @retval NIVEL_ERROR          Pulsación incorrecta o tiempo agotado.
+ * @retval REINICIO_SOLICITADO  Se mantuvo el botón de reinicio.
  */
 static resultado_nivel_t esperar_con_parpadeo(float tiempo_total_seg,
                                               int nivel,
@@ -508,6 +652,8 @@ static resultado_nivel_t esperar_con_parpadeo(float tiempo_total_seg,
                     t_led[i] = ahora;
 
                     if ((int)i != lista[posicion]) {
+                        printf("este es el tiempo gastado por el jugador: %.3f\n",
+                                (double)(diff_ms(ahora_ms(), inicio) / 1000.0f));
                         printf("ERROR\n");
                         gpio_clr_mask(MASK_LED_RESP);
 
@@ -515,8 +661,7 @@ static resultado_nivel_t esperar_con_parpadeo(float tiempo_total_seg,
                         actualizar_numero(nivel, vidas_actuales, tiempo_acumulado);
 
                         animacion_entrada_incorrecta();
-                        printf("este es el tiempo gastado por el jugador: %.3f\n",
-                                (double)(diff_ms(ahora_ms(), inicio) / 1000.0f));
+                        
 
                         return NIVEL_ERROR;
                     }
@@ -525,6 +670,7 @@ static resultado_nivel_t esperar_con_parpadeo(float tiempo_total_seg,
                     printf("Correcto\n");
 
                     if (posicion == nivel) {
+                        
                         float gastado = diff_ms(ahora_ms(), inicio) / 1000.0f;
                         printf("este es el tiempo gastado por el jugador: %.3f\n",
                                (double)gastado);
@@ -534,8 +680,7 @@ static resultado_nivel_t esperar_con_parpadeo(float tiempo_total_seg,
                         actualizar_numero(nivel, vidas_actuales, tiempo_acumulado);
 
                         animacion_nivel_superado();
-                        printf("este es el tiempo gastado por el jugador: \n",
-                                (double)(diff_ms(ahora_ms(), inicio) / 1000.0f));
+                        
                         return NIVEL_OK;
                     }
                 }
@@ -558,10 +703,27 @@ static resultado_nivel_t esperar_con_parpadeo(float tiempo_total_seg,
     return NIVEL_ERROR;
 }
 
-/* =================================================
- * UNA PARTIDA COMPLETA
- * ================================================= */
+/** @} */ /* fin fase_respuesta */
 
+/**
+ * @defgroup partida Partida completa
+ * @{
+ */
+
+/**
+ * @brief Ejecuta una partida completa del juego.
+ *
+ * Flujo:
+ *  1. Espera el inicio (esperar_inicio()) y genera la secuencia aleatoria.
+ *  2. Por cada nivel (1..9), muestra el patrón con los LEDs y luego espera
+ *     la respuesta del jugador (esperar_con_parpadeo()).
+ *  3. Si acierta, avanza de nivel; si falla, pierde una vida y repite el nivel.
+ *  4. Termina por victoria (nivel > 9), GAME OVER (sin vidas) o reinicio
+ *     solicitado con pulsación larga.
+ *
+ * La velocidad del patrón aumenta con el nivel y el tiempo de respuesta es
+ * 1.25 veces la duración total del patrón.
+ */
 static void ciclo_juego(void) {
 
     /* El display conserva lo último mostrado hasta que se pulse inicio. */
@@ -699,10 +861,18 @@ static void ciclo_juego(void) {
     }
 }
 
-/* =================================================
- * MAIN (núcleo 0)
- * ================================================= */
+/** @} */ /* fin partida */
 
+/**
+ * @brief Punto de entrada del programa (núcleo 0).
+ *
+ * Inicializa USB CDC, los GPIO y el display (Nivel 1, 3 vidas, tiempo 00),
+ * lanza el multiplexado del display en el núcleo 1 y ejecuta partidas
+ * indefinidamente.
+ *
+ * @note La UART está desactivada en CMake porque GPIO0/1 son botones.
+ * @return Nunca retorna.
+ */
 int main(void) {
     stdio_init_all();       /* USB CDC (UART desactivada en CMake: GPIO0/1 son botones) */
 

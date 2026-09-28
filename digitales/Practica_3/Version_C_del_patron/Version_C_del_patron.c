@@ -515,6 +515,9 @@ static resultado_nivel_t esperar_con_parpadeo(float tiempo_total_seg,
                         actualizar_numero(nivel, vidas_actuales, tiempo_acumulado);
 
                         animacion_entrada_incorrecta();
+                        printf("este es el tiempo gastado por el jugador: %.3f\n",
+                                (double)(diff_ms(ahora_ms(), inicio) / 1000.0f));
+
                         return NIVEL_ERROR;
                     }
 
@@ -531,6 +534,8 @@ static resultado_nivel_t esperar_con_parpadeo(float tiempo_total_seg,
                         actualizar_numero(nivel, vidas_actuales, tiempo_acumulado);
 
                         animacion_nivel_superado();
+                        printf("este es el tiempo gastado por el jugador: \n",
+                                (double)(diff_ms(ahora_ms(), inicio) / 1000.0f));
                         return NIVEL_OK;
                     }
                 }

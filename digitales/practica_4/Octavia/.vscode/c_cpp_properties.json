@@ -1,0 +1,20 @@
+{
+    "configurations": [
+        {
+            "name": "Pico SDK ARM",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "defines": [
+                "PICO_BOARD=\"pico\"",
+                "PICO_ON_DEVICE=1"
+            ],
+            "compilerPath": "${userHome}/.pico-sdk/toolchain/15_2_Rel1/bin/arm-none-eabi-gcc.exe",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "windows-gcc-arm",
+            "configurationProvider": "ms-vscode.cmake-tools"  // 
+        }
+    ],
+    "version": 4
+}

@@ -1,0 +1,47 @@
+/** @file report.c @brief Preparación de reportes. */
+#include "report.h"
+#include "config.h"
+#include "meas.h"
+#include "fmt.h"
+#include "uart_tx.h"
+
+static uint32_t report_n;          /**< Número del próximo reporte. */
+static uint32_t prev_report_t;     /**< Instante del reporte anterior [us]. */
+volatile uint32_t g_dropped_reports;
+
+void report_task(uint32_t now)
+{
+    const uint32_t n  = report_n; //numero que llevara
+    const uint32_t dt = (n == 0u) ? 0u : (uint32_t)((now - prev_report_t + 500u) / 1000u); //milisegundos desde el reporte anterior
+    report_n++;
+    prev_report_t = now; //es para detectar omisiones.
+
+    meas_result_t r = {0}; //estas dos lineas tienen el etado vigente.
+    const meas_state_t st = meas_get( &r);
+
+    if (uart_tx_free() < MAX_LINE) {
+        g_dropped_reports++;
+        return;
+    }
+
+    char  line[MAX_LINE]; //p es el cursor de escritura
+    char *p = line;
+    p = put_u32(p, n);  *p++ = ',';
+    p = put_u32(p, dt); *p++ = ',';
+
+    if (st == MEAS_OK) { //escribe si las mediones son validas
+        uint64_t f_mhz = ((uint64_t)r.periods * 1000000000ull + r.span / 2u) / r.span;
+        uint64_t d_x10 = ((uint64_t)r.th * 1000ull + r.span / 2u) / r.span;
+        if (f_mhz > UINT32_MAX) { f_mhz = UINT32_MAX; } //limita para uq quepa en 32 bits
+        p = put_fixed3(p, (uint32_t)f_mhz); *p++ = ',';
+        p = put_fixed1(p, (uint32_t)d_x10);
+    } else {
+        p = put_str(p, "NA,NA");
+    }
+    *p++ = ',';
+    p = put_str(p, st == MEAS_OK ? "OK" :
+                   st == MEAS_WAITING ? "ESPERANDO" : "SIN_TRANSICIONES");
+    *p++ = '\n';
+
+    uart_tx_push(line, (size_t)(p - line));
+}

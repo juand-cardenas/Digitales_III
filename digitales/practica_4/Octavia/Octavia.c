@@ -21,9 +21,9 @@ int main(void)
 
     // Inicializar valores
     buttons_init();
-    audio_init(8, 0.0f, 50000.0f);
+    audio_init(8, 0.0f, 50000.0f); //llena la tabla seno.
     dac_init();
-    systick_init();
+    systick_init();//en cuanto se habilita, la ISR empieza a llamar a audio_get_sample() y dac_write().
 
     printf("Prueba de Octavia, esperando notas: \n");
 

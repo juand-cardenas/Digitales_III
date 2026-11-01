@@ -9,11 +9,11 @@
 #define SYST_CVR (*(volatile uint32_t *)0xE000E018) // Current Value Register
 
 // Variables
-volatile uint32_t systick_counter = 0; 
+volatile uint32_t systick_counter = 0; //numero de interrupciones desde que empezo
 static volatile uint8_t ultima_muestra = 127;
 
 // Initialize the SysTick timer
-void systick_init(void) 
+void systick_init(void) //inicializa el systick para que interrumpa cada 20us
     {
         // Detener el temporizador SysTick mientras se inicializa
         SYST_CSR = 0;
@@ -28,9 +28,9 @@ void systick_init(void)
         SYST_CSR = 0x07; 
     }
 
-void isr_systick(void) 
+void isr_systick(void) // es llamda cada 20 us y genra una muestra de la seno
     {
-        ultima_muestra = audio_get_sample();
-        dac_write(ultima_muestra);
+        ultima_muestra = audio_get_sample(); //pide el siguiente valor de la onda.
+        dac_write(ultima_muestra); //va al dac
         systick_counter++;
     }

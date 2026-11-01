@@ -6,7 +6,7 @@
 #define PI 3.14159265358979323846 
 #define AUDIO_TABLE_SIZE  256
 
-static uint8_t audio_table[AUDIO_TABLE_SIZE];
+static  uint8_t audio_table[AUDIO_TABLE_SIZE];
 
 // Variables globales del módulo
 static uint8_t  audio_bits = 8;
@@ -44,8 +44,7 @@ void audio_set_frequency(float nueva_frecuencia)
 {
     audio_current_freq = nueva_frecuencia;
 
-    if (nueva_frecuencia == 0)
-     {
+    if (nueva_frecuencia == 0){
         i_phase = 0.0f; // Silencio
         return;
         }
@@ -54,10 +53,11 @@ void audio_set_frequency(float nueva_frecuencia)
 }
 
 
-uint8_t audio_phase(void)
+uint8_t audio_phase(void) //Devuelve el índice de tabla de esta muestra y 
+//deja el acumulador listo para la siguiente
 {
     // Variables: declaracion e inicializacion    
-    uint8_t indice_actual = (uint8_t)phase_accumulator;  
+    uint8_t indice_actual = (uint8_t)phase_accumulator;  //la parte entera del acumulador 
 
     phase_accumulator += i_phase; 
     
@@ -72,6 +72,8 @@ uint8_t audio_phase(void)
 }
 
 uint8_t audio_get_sample(void)
+//Devuelve el byte que debe enviarse al DAC en este instante. Es lo que la ISR 
+//llama 50 000 veces por segundo.
 {   
     uint8_t  indice_actual = 0;
     uint8_t  DAC_value = 0;

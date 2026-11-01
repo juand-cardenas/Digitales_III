@@ -11,7 +11,7 @@
 #include "hardware/gpio.h"
 #endif
 
-// Pines de salida de datos del DAC0830
+// Pines de entrada 
 #define PIN_DO 1
 #define PIN_RE 2
 #define PIN_MI 3
@@ -26,7 +26,7 @@
 
 // Constante especial para indicar que no hay ninguna tecla presionada
 #define NOTA_NINGUNA -128
-#define TIEMPO_DEBOUNCE_MS 10  // Tiempo de espera
+#define TIEMPO_DEBOUNCE_MS 10  // Tiempo de espera (lectura)
 
 static uint8_t octava_referencia     = 0; // Estado anterior de los botones
 
@@ -41,6 +41,7 @@ static uint8_t octava_candidata = 4;
 static int8_t nota_actual = NOTA_NINGUNA;
 
 void buttons_init(void) 
+//Configura los 10 GPIO como entradas con resistencia pull-up y fija el estado inicial
     {
     // Inicializar los pines de los botones
     gpio_init(PIN_DO);  gpio_init(PIN_RE);  gpio_init(PIN_MI);  gpio_init(PIN_FA);
@@ -68,6 +69,7 @@ void buttons_init(void)
 static int8_t buttons_read_note_raw(void)
 {
     // Verificar qué botón de nota está presionado y retornar su desplazamiento en semitonos
+    //implementa la política para pulsaciones simultáneas
     if      (gpio_get(PIN_DO) == 0)  return -9; 
     else if (gpio_get(PIN_RE) == 0)  return -7;
     else if (gpio_get(PIN_MI) == 0)  return -5;
@@ -79,8 +81,6 @@ static int8_t buttons_read_note_raw(void)
     // Si no se cumple ninguna de las anteriores, ninguna tecla está abajo
     return NOTA_NINGUNA; 
 }
-
-
 
 bool buttons_update(void)
     {
@@ -128,6 +128,7 @@ bool buttons_update(void)
 
 
 float buttons_get_note(void)
+//Convierte la nota validada y la octava validada en una frecuencia en Hz
     {
         // Si la variable del antirebote indica que no hay nota presionada, se retorna silencio
         if (nota_actual == NOTA_NINGUNA) return 0.0f; 

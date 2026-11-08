@@ -16,9 +16,12 @@ static volatile uint32_t tail;             /**< Lectura: ISR y uart_tx_push() (a
  */
 static void tx_fill_fifo(void)
 {
-    uart_hw_t *hw = uart_get_hw(UART_ID); //puntero a los registros de la UART
+    uart_hw_t *hw = uart_get_hw(UART_ID); //puntero a los registros de la UART 
     while (head != tail && uart_is_writable(UART_ID)) {
-        hw->dr = buf[tail & TX_BUF_MASK]; //escribe el byte en el registro de datos
+        /**head != tail: todavía hay datos pendientes en el buffer circular. head es donde escribe el programa (productor) y tail desde donde se lee/saca (consumidor). Si son iguales, el buffer está vacío.
+            uart_is_writable(UART_ID): el FIFO de TX del hardware tiene espacio (no está lleno). */
+        hw->dr = buf[tail & TX_BUF_MASK]; //escribe el byte en el registro de datos y lo tranmite por 
+        //pin TX
         tail++;
     }
 }
@@ -27,6 +30,7 @@ static void tx_fill_fifo(void)
 static void uart_tx_isr(void)
 {
     tx_fill_fifo();
+    //desactiva la IQR  del TX.
     if (head == tail) { // Si no queda nada, apaga la interrupcion TX
         hw_clear_bits(&uart_get_hw(UART_ID)->imsc, UART_UARTIMSC_TXIM_BITS);
     }

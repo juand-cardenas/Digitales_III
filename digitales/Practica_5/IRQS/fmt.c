@@ -18,6 +18,7 @@ char *put_u32(char *p, uint32_t v)
 }
 
 char *put_fixed3(char *p, uint32_t v)
+// *P apunta a un a lista, la cunal tiene lo que se va a imprimir, hace de cursos
 {
     uint32_t frac = v % 1000u; //v esta en milihertz
     p = put_u32(p, v / 1000u); //parte entera de los HZ

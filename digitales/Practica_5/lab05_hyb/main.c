@@ -15,7 +15,7 @@
 int main(void)
 {
     hw_init();
-    sig_gen_start(15, 10000.0f, 95.0f);
+    sig_gen_start(15, 50000.0f, 25.0f);
     app_hyb_start();
 
     for (;;) {
